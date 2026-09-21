@@ -26,6 +26,27 @@ jobs:
     - name: Build plugin
       run: ./gradlew build
 
+    - name: Dump Hytale API signatures
+      if: always()
+      run: |
+        set +e
+        JARS=$(find "$HOME" "$GITHUB_WORKSPACE" -name "*.jar" 2>/dev/null | grep -vi wrapper)
+        for CLASS in SwitchActiveSlotEvent HotbarManager PlayerRef InteractiveCustomUIPage UIEventBuilder; do
+          FOUND=""
+          for J in $JARS; do
+            ENTRY=$(unzip -l "$J" 2>/dev/null | awk '{print $4}' | grep -E "(^|/)${CLASS}\\.class$" | head -1)
+            if [ -n "$ENTRY" ]; then
+              FQN=$(echo "$ENTRY" | sed 's#/#.#g; s#\.class$##')
+              echo "=========== $FQN"
+              javap -cp "$J" "$FQN"
+              FOUND="yes"
+              break
+            fi
+          done
+          [ -z "$FOUND" ] && echo "=========== $CLASS — не найден"
+        done
+        exit 0
+
     - name: Show jar contents
       run: unzip -l build/libs/*.jar
 

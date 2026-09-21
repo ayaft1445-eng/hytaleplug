@@ -1,0 +1,13 @@
+// Кнопка ВЫБРАННОЙ вкладки — яркая фиолетовая. Текст подставляет сервер.
+
+@ActiveTabStyle = TextButtonStyle(
+  Default: (Background: #7c3aed, LabelStyle: (FontSize: 17, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
+  Hovered: (Background: #8b5cf6, LabelStyle: (FontSize: 17, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
+  Pressed: (Background: #6d28d9, LabelStyle: (FontSize: 17, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center))
+);
+
+TextButton {
+  Text: "ВКЛАДКА";
+  Anchor: (Width: 228, Height: 50);
+  Style: @ActiveTabStyle;
+}

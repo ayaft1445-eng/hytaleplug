@@ -34,6 +34,6 @@ public class MenuCommand extends AbstractPlayerCommand {
             return;
         }
 
-        player.getPageManager().openCustomPage(ref, store, new MainMenuPage(playerRef));
+        player.getPageManager().openCustomPage(ref, store, new MainMenuPage(playerRef, player.getPageManager(), 0));
     }
 }

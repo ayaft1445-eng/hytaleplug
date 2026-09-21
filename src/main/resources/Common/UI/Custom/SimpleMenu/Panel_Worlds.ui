@@ -1,0 +1,12 @@
+// Содержимое вкладки. Текст меняется в строке Text ниже.
+
+Group {
+  Anchor: (Full: 0);
+  LayoutMode: Center;
+
+  Label {
+    Text: "Скоро будет доступно";
+    Anchor: (Height: 34);
+    Style: (FontSize: 24, TextColor: #ffffff, HorizontalAlignment: Center, VerticalAlignment: Center);
+  }
+}
