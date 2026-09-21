@@ -30,7 +30,7 @@ public class SimpleMenuPlugin extends JavaPlugin {
     protected void setup() {
         this.getCommandRegistry().registerCommand(new MenuCommand());
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, SimpleMenuPlugin::onPlayerReady);
-        this.getLogger().info("[SimpleMenu] Плагин загружен. Команда для открытия меню: /menu");
+        System.out.println("[SimpleMenu] Плагин загружен. Команда для открытия меню: /menu");
     }
 
     /** Вешает плашку в правом нижнем углу, как только игрок полностью зашёл на сервер. */

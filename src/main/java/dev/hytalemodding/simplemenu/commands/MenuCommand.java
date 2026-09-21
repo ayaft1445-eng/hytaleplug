@@ -21,11 +21,6 @@ public class MenuCommand extends AbstractPlayerCommand {
     }
 
     @Override
-    protected boolean canGeneratePermission() {
-        return false;
-    }
-
-    @Override
     protected void execute(
             @Nonnull CommandContext context,
             @Nonnull Store<EntityStore> store,

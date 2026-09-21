@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
     - uses: actions/checkout@v6
 
@@ -26,9 +26,53 @@ jobs:
     - name: Build plugin
       run: ./gradlew build
 
-    - name: Upload plugin jar
+    # Временный шаг: печатает реальные сигнатуры классов Hytale API, чтобы сверить код.
+    - name: Dump Hytale API signatures
+      if: always()
+      run: |
+        set +e
+        JARS=$(find "$HOME" "$GITHUB_WORKSPACE" -name "*.jar" 2>/dev/null | grep -vi wrapper)
+        for CLASS in HytaleLogger AbstractPlayerCommand AbstractCommand CustomUIHud HudManager; do
+          FOUND=""
+          for J in $JARS; do
+            ENTRY=$(unzip -l "$J" 2>/dev/null | awk '{print $4}' | grep -E "(^|/)${CLASS}\\.class$" | head -1)
+            if [ -n "$ENTRY" ]; then
+              FQN=$(echo "$ENTRY" | sed 's#/#.#g; s#\.class$##')
+              echo "=========== $FQN"
+              javap -cp "$J" "$FQN"
+              FOUND="yes"
+              break
+            fi
+          done
+          [ -z "$FOUND" ] && echo "=========== $CLASS — не найден ни в одном jar"
+        done
+        exit 0
+
+    - name: Upload plugin jar as artifact
       uses: actions/upload-artifact@v4
       with:
         name: SimpleMenu-plugin
         path: build/libs/*.jar
         if-no-files-found: error
+
+    # Кладём собранный jar в Releases, чтобы его можно было скачать одной ссылкой:
+    # https://github.com/ayaft1445-eng/hytaleplug/releases/latest
+    - name: Publish jar to Releases
+      if: github.event_name == 'push'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        JARS=$(ls build/libs/*.jar | grep -v -- '-sources.jar' | grep -v -- '-javadoc.jar')
+        echo "Публикуем: $JARS"
+        gh release delete simplemenu-latest --yes --cleanup-tag || true
+        gh release create simplemenu-latest $JARS \
+          --target "$GITHUB_SHA" \
+          --title "SimpleMenu — последняя сборка" \
+          --notes "Плагин меню для сервера Hytale.
+
+        Что делает: команда /menu открывает меню с двумя вкладками, в правом нижнем углу экрана висит плашка-подсказка.
+
+        Как поставить: скачайте файл SimpleMenu-1.0.0.jar ниже и положите его в папку plugins/ вашего сервера, затем перезапустите сервер.
+
+        Инструкция целиком: INSTALL-RU.md в репозитории."
