@@ -62,19 +62,12 @@ jobs:
       if: always()
       run: |
         set +e
-        JARS=$(find "$HOME" "$GITHUB_WORKSPACE" -name "*.jar" 2>/dev/null | grep -vi wrapper)
-        for CLASS in SwitchActiveSlotEvent HotbarManager; do
-          FOUND=""
-          for J in $JARS; do
-            ENTRY=$(unzip -l "$J" 2>/dev/null | awk '{print $4}' | grep -E "(^|/)${CLASS}\\.class$" | head -1)
-            if [ -n "$ENTRY" ]; then
-              FQN=$(echo "$ENTRY" | sed 's#/#.#g; s#\.class$##')
-              echo "=========== $FQN"
-              javap -cp "$J" "$FQN"
-              FOUND="yes"
-              break
-            fi
-          done
-          [ -z "$FOUND" ] && echo "=========== $CLASS — не найден"
-        done
+        JAR=$(find "$HOME" -name "*.jar" 2>/dev/null | grep -iv wrapper | xargs -I{} sh -c 'unzip -l {} 2>/dev/null | grep -q "server/core/event/events/player/" && echo {}' | head -1)
+        echo "JAR: $JAR"
+        echo "===== события игрока ====="
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "event/events/player/[A-Za-z]+Event\\.class$" | sed 's#.*/##'
+        echo "===== всё, что похоже на ввод ====="
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "\\.class$" | grep -iE "(input|keybind|hotkey|mouse|emote|useitem|iteminteract)" | sed 's#^#  #' | head -40
+        echo "===== события блоков и сущностей ====="
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "event/events/(block|entity|world)/[A-Za-z]+Event\\.class$" | sed 's#.*/##' | head -40
         exit 0
