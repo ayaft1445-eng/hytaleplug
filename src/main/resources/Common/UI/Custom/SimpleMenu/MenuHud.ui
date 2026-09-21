@@ -1,0 +1,18 @@
+// Плашка в правом нижнем углу экрана. Видна постоянно, поверх игры.
+// Размер и отступы от края меняются в Anchor у группы #MenuBadge.
+
+Group {
+  Anchor: (Full: 0);
+
+  Group #MenuBadge {
+    Anchor: (Width: 180, Height: 48, Right: 24, Bottom: 24);
+    Background: #141c26(0.85);
+    LayoutMode: Center;
+
+    Label {
+      Text: "МЕНЮ — /menu";
+      Anchor: (Height: 20);
+      Style: (FontSize: 15, TextColor: #ffffff, HorizontalAlignment: Center, VerticalAlignment: Center, RenderBold: true);
+    }
+  }
+}
