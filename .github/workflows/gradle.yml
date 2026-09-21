@@ -52,22 +52,8 @@ jobs:
           --title "SimpleMenu — последняя сборка" \
           --notes "Плагин меню для сервера Hytale.
 
-        Что делает: команда /menu открывает меню с двумя вкладками, в правом нижнем углу экрана висит плашка-подсказка.
+        Что делает: команда /menu открывает меню с четырьмя вкладками (Мини-игры, Таблица лидеров, Косметика, Миры), в правом нижнем углу экрана висит плашка-подсказка.
 
-        Как поставить: скачайте файл SimpleMenu-1.0.0.jar ниже и положите его в папку plugins/ вашего сервера, затем перезапустите сервер.
+        Как поставить: скачайте файл .jar ниже и положите его в папку plugins/ вашего сервера, затем перезапустите сервер. Старый файл плагина из папки удалите.
 
         Инструкция целиком: INSTALL-RU.md в репозитории."
-
-    - name: Dump Hytale API signatures
-      if: always()
-      run: |
-        set +e
-        JAR=$(find "$HOME" -name "*.jar" 2>/dev/null | grep -iv wrapper | xargs -I{} sh -c 'unzip -l {} 2>/dev/null | grep -q "server/core/event/events/player/" && echo {}' | head -1)
-        echo "JAR: $JAR"
-        echo "===== события игрока ====="
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "event/events/player/[A-Za-z]+Event\\.class$" | sed 's#.*/##'
-        echo "===== всё, что похоже на ввод ====="
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "\\.class$" | grep -iE "(input|keybind|hotkey|mouse|emote|useitem|iteminteract)" | sed 's#^#  #' | head -40
-        echo "===== события блоков и сущностей ====="
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "event/events/(block|entity|world)/[A-Za-z]+Event\\.class$" | sed 's#.*/##' | head -40
-        exit 0
