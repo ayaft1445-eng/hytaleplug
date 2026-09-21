@@ -12,6 +12,7 @@ import dev.hytalemodding.simplemenu.commands.MenuCommand;
 import dev.hytalemodding.simplemenu.ui.MenuHud;
 
 import javax.annotation.Nonnull;
+import java.util.logging.Level;
 
 /**
  * Точка входа плагина.
@@ -30,7 +31,7 @@ public class SimpleMenuPlugin extends JavaPlugin {
     protected void setup() {
         this.getCommandRegistry().registerCommand(new MenuCommand());
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, SimpleMenuPlugin::onPlayerReady);
-        System.out.println("[SimpleMenu] Плагин загружен. Команда для открытия меню: /menu");
+        this.getLogger().at(Level.INFO).log("[SimpleMenu] Плагин загружен. Команда для открытия меню: /menu");
     }
 
     /** Вешает плашку в правом нижнем углу, как только игрок полностью зашёл на сервер. */
