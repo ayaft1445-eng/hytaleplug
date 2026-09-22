@@ -63,14 +63,8 @@ jobs:
       run: |
         set +e
         JAR=$(find "$HOME" -name "Server-*.jar" 2>/dev/null | head -1)
-        echo "JAR: $JAR"
-        for FQN in \
-          com.hypixel.hytale.server.core.modules.interaction.interaction.config.server.OpenCustomUIInteraction \
-          com.hypixel.hytale.server.core.entity.entities.player.pages.CustomUIPage \
-          com.hypixel.hytale.server.core.entity.entities.player.pages.BasicCustomUIPage ; do
-          echo "=========== $FQN"
-          javap -cp "$JAR" "$FQN" 2>&1 | head -40
-        done
-        echo "=========== поиск OpenCustomUIInteraction по всему jar"
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "OpenCustomUIInteraction|CustomHud|ItemHudUI" 
+        P=com.hypixel.hytale.server.core.modules.interaction.interaction.config.server.OpenCustomUIInteraction
+        javap -cp "$JAR" "$P" "$P\$CustomPageSupplier" "$P\$BlockEntityCustomPageSupplier"
+        echo "===== где живут ассеты плагина ====="
+        javap -cp "$JAR" com.hypixel.hytale.server.core.asset.type.item.config.ItemHudUI | head -20
         exit 0
