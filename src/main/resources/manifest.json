@@ -1,8 +1,8 @@
 {
     "Group": "HytaleModding",
     "Name": "SimpleMenu",
-    "Version": "1.1.0",
-    "Description": "Simple server main menu with two tabs and a bottom-right HUD badge",
+    "Version": "2.0.0",
+    "Description": "Server menu: news, six tabs and four reserved slots",
     "Authors": [
         {
             "Name": "ayaft1445-eng",

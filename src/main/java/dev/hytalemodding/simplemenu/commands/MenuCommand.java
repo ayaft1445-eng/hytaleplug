@@ -18,6 +18,8 @@ public class MenuCommand extends AbstractPlayerCommand {
 
     public MenuCommand() {
         super("menu", "Открыть главное меню сервера");
+        // /hub — команда объединённого мода ServerHub, /m — короткий вариант
+        this.addAliases("hub", "m");
     }
 
     @Override
@@ -34,6 +36,6 @@ public class MenuCommand extends AbstractPlayerCommand {
             return;
         }
 
-        player.getPageManager().openCustomPage(ref, store, new MainMenuPage(playerRef, player.getPageManager(), 0));
+        player.getPageManager().openCustomPage(ref, store, new MainMenuPage(playerRef, player.getPageManager(), MainMenuPage.SECTION_HOME));
     }
 }

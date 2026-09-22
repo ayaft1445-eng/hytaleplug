@@ -57,3 +57,20 @@ jobs:
         Как поставить: скачайте файл .jar ниже и положите его в папку plugins/ вашего сервера, затем перезапустите сервер. Старый файл плагина из папки удалите.
 
         Инструкция целиком: INSTALL-RU.md в репозитории."
+
+    - name: Dump Hytale API signatures
+      if: always()
+      run: |
+        set +e
+        JAR=$(find "$HOME" -name "*.jar" 2>/dev/null | grep -iv wrapper | xargs -I{} sh -c 'unzip -l {} 2>/dev/null | grep -q "entity/entities/player/hud/" && echo {}' | head -1)
+        echo "JAR: $JAR"
+        echo "===== классы Hud / CustomUI ====="
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "(Hud|CustomUI)[A-Za-z]*\\.class$" | sed 's#.*/##' | sort -u
+        echo "===== JavaPlugin ====="
+        javap -cp "$JAR" com.hypixel.hytale.server.core.plugin.JavaPlugin
+        echo "===== UIEventBuilder ====="
+        javap -cp "$JAR" com.hypixel.hytale.server.core.ui.builder.UIEventBuilder
+        echo "===== входящие пакеты игрока ====="
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "protocol/packets/player/[A-Za-z]+\\.class$" | sed 's#.*/##'
+        exit 0
+
