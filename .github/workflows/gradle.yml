@@ -62,15 +62,15 @@ jobs:
       if: always()
       run: |
         set +e
-        JAR=$(find "$HOME" -name "*.jar" 2>/dev/null | grep -iv wrapper | xargs -I{} sh -c 'unzip -l {} 2>/dev/null | grep -q "entity/entities/player/hud/" && echo {}' | head -1)
+        JAR=$(find "$HOME" -name "Server-*.jar" 2>/dev/null | head -1)
         echo "JAR: $JAR"
-        echo "===== классы Hud / CustomUI ====="
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "(Hud|CustomUI)[A-Za-z]*\\.class$" | sed 's#.*/##' | sort -u
-        echo "===== JavaPlugin ====="
-        javap -cp "$JAR" com.hypixel.hytale.server.core.plugin.JavaPlugin
-        echo "===== UIEventBuilder ====="
-        javap -cp "$JAR" com.hypixel.hytale.server.core.ui.builder.UIEventBuilder
-        echo "===== входящие пакеты игрока ====="
-        unzip -l "$JAR" | awk '{print $4}' | grep -E "protocol/packets/player/[A-Za-z]+\\.class$" | sed 's#.*/##'
+        for FQN in \
+          com.hypixel.hytale.server.core.modules.interaction.interaction.config.server.OpenCustomUIInteraction \
+          com.hypixel.hytale.server.core.entity.entities.player.pages.CustomUIPage \
+          com.hypixel.hytale.server.core.entity.entities.player.pages.BasicCustomUIPage ; do
+          echo "=========== $FQN"
+          javap -cp "$JAR" "$FQN" 2>&1 | head -40
+        done
+        echo "=========== поиск OpenCustomUIInteraction по всему jar"
+        unzip -l "$JAR" | awk '{print $4}' | grep -E "OpenCustomUIInteraction|CustomHud|ItemHudUI" 
         exit 0
-
