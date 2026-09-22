@@ -42,12 +42,12 @@ Group {
       Label {
         Text: "Мы запустились! Заходите, зовите друзей";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "и пишите о багах в Discord.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
   }
@@ -82,12 +82,12 @@ Group {
       Label {
         Text: "Скоро добавим «Захват флага»:";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "две команды, один флаг, много шума.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
   }
@@ -122,12 +122,12 @@ Group {
       Label {
         Text: "Спавн перестроен, добавлены порталы";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "к аренам и торговой площади.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
   }

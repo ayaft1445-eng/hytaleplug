@@ -15,36 +15,36 @@ Group {
   Label {
     Text: "1. Уважай других игроков: без оскорблений и токсичности.";
     Anchor: (Height: 26);
-    Style: (FontSize: 16, TextColor: #ffffff, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #ffffff);
   }
   Group { Anchor: (Height: 8); }
   Label {
     Text: "2. Читы, багоюз и сторонние программы запрещены.";
     Anchor: (Height: 26);
-    Style: (FontSize: 16, TextColor: #ffffff, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #ffffff);
   }
   Group { Anchor: (Height: 8); }
   Label {
     Text: "3. Не ломай и не забирай чужие постройки и вещи.";
     Anchor: (Height: 26);
-    Style: (FontSize: 16, TextColor: #ffffff, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #ffffff);
   }
   Group { Anchor: (Height: 8); }
   Label {
     Text: "4. Реклама других серверов запрещена.";
     Anchor: (Height: 26);
-    Style: (FontSize: 16, TextColor: #ffffff, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #ffffff);
   }
   Group { Anchor: (Height: 8); }
   Label {
     Text: "5. Решение администрации окончательное.";
     Anchor: (Height: 26);
-    Style: (FontSize: 16, TextColor: #ffffff, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #ffffff);
   }
   Group { Anchor: (Height: 18); }
   Label {
     Text: "Это текст-заглушка — замени на свои правила.";
     Anchor: (Height: 20);
-    Style: (FontSize: 13, TextColor: #8b7bb8, RenderBold: false);
+    Style: (FontSize: 13, TextColor: #8b7bb8);
   }
 }

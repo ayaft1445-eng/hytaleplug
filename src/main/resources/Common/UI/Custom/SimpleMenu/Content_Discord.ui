@@ -27,6 +27,6 @@ Group {
   Label {
     Text: "Скопируй ссылку и открой её в браузере.";
     Anchor: (Height: 22);
-    Style: (FontSize: 14, TextColor: #8b7bb8, RenderBold: false);
+    Style: (FontSize: 14, TextColor: #8b7bb8);
   }
 }

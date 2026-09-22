@@ -48,12 +48,12 @@ Group {
       Label {
         Text: "Две команды. Унеси флаг соперника";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "на свою базу раньше врага.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
 
@@ -101,12 +101,12 @@ Group {
       Label {
         Text: "Держись как можно дольше";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "против волн монстров.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
 
@@ -154,12 +154,12 @@ Group {
       Label {
         Text: "Пройди трассу с препятствиями";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
       Label {
         Text: "на время. Есть рекорд сервера.";
         Anchor: (Height: 22);
-        Style: (FontSize: 15, TextColor: #c4b5fd, RenderBold: false);
+        Style: (FontSize: 15, TextColor: #c4b5fd);
       }
     }
 

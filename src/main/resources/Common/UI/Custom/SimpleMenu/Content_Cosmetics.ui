@@ -21,6 +21,6 @@ Group {
   Label {
     Text: "В процессе создания.";
     Anchor: (Height: 24);
-    Style: (FontSize: 16, TextColor: #c4b5fd, RenderBold: false);
+    Style: (FontSize: 16, TextColor: #c4b5fd);
   }
 }
