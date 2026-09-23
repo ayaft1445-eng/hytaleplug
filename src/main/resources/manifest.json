@@ -1,26 +1,25 @@
 {
     "Group": "HytaleModding",
-    "Name": "ExamplePlugin",
-    "Version": "0.0.0",
-    "Description": "Description of your plugin",
+    "Name": "chattranslator",
+    "Version": "1.0.0",
+    "Description": "Translates chat between Russian and English with DeepL",
     "Authors": [
         {
-            "Name": "Your_Name",
-            "Email": "your.email@example.com",
-            "Url": "https://your-website.com"
+            "Name": "ayaft1445-eng",
+            "Email": "noreply@example.com",
+            "Url": "https://github.com/ayaft1445-eng"
         }
     ],
-    "Website": "https://your-plugin-website.com",
+    "Website": "https://github.com/ayaft1445-eng/hytaleplug",
     "DisabledByDefault": false,
-    "IncludesAssetPack": true,
+    "IncludesAssetPack": false,
     "Dependencies": {
         "Hytale:AssetModule": "*"
     },
     "OptionalDependencies": {
-        
     },
-    "ServerVersion": ">=0.5.3 <0.6.0",
-    "Main": "dev.hytalemodding.ExamplePlugin",
+    "ServerVersion": ">=0.6.0 <0.7.0",
+    "Main": "dev.hytalemodding.chattranslator.ChatTranslatorPlugin",
     "UpdateChecker": {
         "CurseForge": ""
     }
