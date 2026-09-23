@@ -1,0 +1,1015 @@
+# Встроенный разговорник ChatTranslator: готовые переводы частых слов и фраз чата.
+# Свои фразы сервер добавляет в phrases.txt в папке плагина — они важнее этих.
+#
+# Формат строки:  русский = english   — перевод в обе стороны
+#                 русский > english   — только с русского на английский
+#                 русский < english   — только с английского на русский
+# Для одной фразы в каждую сторону берётся первая подходящая строка.
+# Регистр букв, «ё» и знаки препинания при сравнении не важны.
+#
+# [обращения] — приветствия, «да», «нет», «спасибо», «ок»: переводятся и тогда,
+#               когда стоят в начале или в конце предложения через запятую.
+# [фразы]     — переводятся, только если предложение целиком состоит из фразы.
+# [слова]     — отдельные слова: заменяют перевод из словаря, в том числе
+#               внутри предложения, если оно переводится по словам.
+# [как есть]  — слова, которые понятны без перевода (gg, lol, afk): не переводятся.
+
+[как есть]
+gg
+wp
+gg wp
+ggwp
+lol
+lmao
+rofl
+afk
+pvp
+pve
+npc
+hp
+xp
+mp
+ok
+okay
+omg
+wtf
+rip
+1v1
+2v2
+haha
+hahaha
+hah
+
+[обращения]
+привет = hi
+привет < hello
+привет < hey
+привет < hey there
+привет < hi there
+привет < yo
+привет < hii
+привет < helo
+привет < hallo
+прив > hi
+приветик > hi
+приветики > hi
+приветствую > greetings
+хай > hi
+хэй > hey
+ку > hi
+куку > hi
+салют > hi
+здравствуйте > hello
+здравствуй > hello
+здрасте > hello
+здрасьте > hello
+здарова > hey
+здаров > hey
+хелло > hello
+хеллоу > hello
+всем привет = hi everyone
+всем привет < hi all
+всем привет < hi guys
+всем привет < hey guys
+всем привет < hey all
+всем привет < hello everyone
+всем привет < hello all
+всем привет < hello guys
+всем привет < hey everyone
+всем привет < hi everybody
+привет всем > hi everyone
+всем хай > hi everyone
+всем ку > hi everyone
+всем здравствуйте > hello everyone
+ребят привет > hi guys
+привет ребят > hi guys
+привет ребята > hi guys
+доброе утро = good morning
+доброе утро < gm
+добрый день = good afternoon
+добрый вечер = good evening
+доброй ночи > good night
+пока = bye
+пока < bye bye
+пока < bb
+пока < cya
+пока < byee
+пока < goodbye
+пока-пока > bye-bye
+покеда > bye
+бб > bb
+бай > bye
+до свидания > goodbye
+всем пока = bye everyone
+всем пока < bye all
+всем пока < bye guys
+всем пока < bye everybody
+пока всем > bye everyone
+увидимся = see you
+увидимся < see ya
+увидимся < see u
+увидимся < see you later
+увидимся < later
+до встречи > see you
+до завтра = see you tomorrow
+
+да = yes
+да < yea
+да < ye
+ага = yeah
+ага < yep
+ага < yup
+ага < ya
+угу > uh-huh
+ну да > well, yeah
+да-да > yes, yes
+дада > yes, yes
+конечно = of course
+конечно < ofc
+конечно < sure
+конечно < surely
+конечно < certainly
+конечно же > of course
+разумеется > of course
+нет = no
+неа = nope
+не = nah
+нет-нет > no, no
+не-не > nah
+ок > ok
+окей > okay
+оки > ok
+океей > okay
+ок < k
+ок < kk
+ок < okie
+ок < okey
+ладно = alright
+ладно < all right
+ладно < fine
+ну ладно > oh well
+лады > ok
+ладненько > okay
+понял = got it
+понял < gotcha
+понял < understood
+поняла > got it
+спасибо = thanks
+спасибо < thank you
+спасибо < thx
+спасибо < ty
+спасибо < thanx
+спасибо < tnx
+спасибо < thank u
+спасибо < thnx
+спасибо < tyty
+спс > thx
+спасиб > thanks
+пасиб > thx
+пасиба > thx
+сенкс > thanks
+благодарю > thank you
+спасибо большое = thank you very much
+спасибо большое < thanks a lot
+спасибо большое < thank you so much
+спасибо большое < tysm
+спасибо большое < thx a lot
+спасибо большое < thanks so much
+большое спасибо > thank you so much
+спасибо огромное > thanks a lot
+огромное спасибо > thanks a lot
+спасибо, бро = thanks, bro
+спасибо, бро < thx bro
+спасибо, бро < ty bro
+спс, бро > thx, bro
+спасибо друг > thanks, friend
+пожалуйста = please
+пожалуйста < pls
+пожалуйста < plz
+пожалуйста < plez
+пожалуйста < pleaseee
+пж > pls
+пжл > pls
+пжлст > pls
+плиз > please
+плз > pls
+не за что = you're welcome
+не за что < yw
+не за что < ur welcome
+не за что < your welcome
+не за что < np
+извини = sorry
+извини < sry
+извини < soz
+извините > sorry
+сорри > sorry
+сори > sorry
+сорян > sorry
+прости > sorry
+простите > sorry
+ой = oops
+упс > oops
+блин = damn
+блин < dang
+блин < dammit
+блин < damn it
+блина > damn
+блять > fuck
+блин < ugh
+чёрт > damn
+капец > damn
+лол > lol
+кек > lol
+ахах > haha
+ахаха > haha
+ахахах > hahaha
+ахахаха > hahaha
+хаха > haha
+хахаха > hahaha
+хах > hah
+ха > ha
+вау = wow
+ого = whoa
+ого < woah
+ничего себе > wow
+офигеть > wow
+обалдеть > wow
+круто = cool
+круто < nice
+круто < awesome
+круто < sick
+круто < dope
+класс > cool
+классно > cool
+супер = super
+отлично = great
+отлично < excellent
+отлично < perfect
+отлично < good job
+норм > fine
+нормально > fine
+ура = hooray
+ура < yay
+ура < yaay
+эй > hey
+ну > well
+короче > anyway
+кстати = by the way
+кстати < btw
+кстати < by the way
+кст > btw
+бро = bro
+братан > bro
+брат > bro
+братишка > bro
+чувак = dude
+чел > dude
+ребята = guys
+ребята < guys
+ребята < you guys
+ребят > guys
+народ > folks
+пацаны > guys
+парни > guys
+гг > gg
+гг вп > gg wp
+изи > ez
+лол кек > lol
+
+[фразы]
+привет, как дела = hi, how are you
+привет как дела < hi how are you
+привет как дела < hey how are you
+привет как дела < hello how are you
+привет как ты > hi, how are you
+всем привет как дела > hi everyone, how are you
+понятно = I see
+понятно < i see
+ясно > I see
+хорошо > okay
+как дела = how are you
+как дела < how r u
+как дела < how are u
+как дела < hru
+как дела < how u doing
+как дела < how are you doing
+как дела < how's it going
+как дела < hows it going
+как дела < how is it going
+как дела < what's up
+как дела < whats up
+как дела < wassup
+как дела < wazzup
+как дела < sup
+как дела < wbu
+как ты > how are you
+как сам > how are you doing
+как поживаешь > how are you doing
+как жизнь > how's life
+как оно > how's it going
+что нового = what's new
+что делаешь = what are you doing
+что делаешь < wyd
+что делаешь < what u doing
+что делаешь < what r u doing
+что делаешь < whatcha doing
+чем занимаешься > what are you doing
+что ты делаешь > what are you doing
+а ты = and you
+а ты < and u
+а ты < hbu
+а ты < how about you
+а ты < what about you
+а у тебя > and you
+а у вас > and you
+у меня всё хорошо = I'm fine
+у меня всё хорошо < i'm fine
+у меня всё хорошо < im fine
+у меня всё хорошо < i'm good
+у меня всё хорошо < im good
+у меня всё хорошо < i'm ok
+у меня всё хорошо < im ok
+у меня всё нормально > I'm fine
+у меня всё норм > I'm fine
+нет, спасибо = no, thanks
+да, пожалуйста = yes, please
+ок, спасибо = ok, thanks
+всё хорошо = all good
+всё хорошо < everything is fine
+всё хорошо < everything's fine
+всё норм > all good
+всё нормально > all good
+всё в порядке > everything's fine
+всё отлично > all great
+хорошо < good
+неплохо = not bad
+отлично > great
+плохо = bad
+так себе = so-so
+бывало и лучше > could be better
+я тоже = me too
+я тоже < same
+я тоже < same here
+я тоже < me 2
+и я > me too
+мне тоже > me too
+я тоже нет = me neither
+я согласен = I agree
+я согласен < agreed
+согласен > agreed
+согласна > agreed
+я согласна > I agree
+кто тут = who's here
+кто тут < anyone here
+кто тут < anybody here
+кто здесь > who's here
+есть кто = is anyone here
+есть кто < anyone
+есть кто < anyone on
+есть кто-нибудь > is anyone here
+есть кто живой > anyone alive here
+кто онлайн = who's online
+кто онлайн < anyone online
+кто играет > who's playing
+ты тут = are you there
+ты тут < u there
+ты тут < you there
+ты здесь > are you there
+вы тут > are you there
+я тут = I'm here
+я тут < im here
+я здесь > I'm here
+я вернулся = I'm back
+я вернулся < im back
+я вернулся < back
+я вернулась > I'm back
+вернулся > back
+с возвращением = welcome back
+с возвращением < wb
+добро пожаловать = welcome
+я новенький = I'm new
+я новенький < im new
+я новенький < i'm new here
+я новенький < im new here
+я новенький < new here
+я новенькая > I'm new
+я новичок > I'm new
+я новый > I'm new
+я тут новенький > I'm new here
+я тут новичок > I'm new here
+я здесь новенький > I'm new here
+где ты = where are you
+где ты < where r u
+где ты < where u at
+где ты < wya
+ты где > where are you
+где вы = where are you guys
+вы где > where are you guys
+иду = coming
+иду < coming
+иду < omw
+иду < on my way
+уже иду > on my way
+я иду > I'm coming
+я уже иду > I'm on my way
+сейчас приду > coming
+подожди = wait
+жди > wait
+подожди < hold on
+подожди < wait a sec
+подожди < wait a second
+подожди < wait a minute
+подождите > wait
+погоди > hold on
+секунду = one sec
+секунду < sec
+секунду < 1 sec
+секунду < one sec
+секунду < one second
+секунду < just a sec
+секундочку > one sec
+сек > sec
+минуту = one minute
+минуту < 1 min
+минуту < one min
+минутку > one minute
+сейчас вернусь = brb
+сейчас вернусь < be right back
+щас вернусь > brb
+ща вернусь > brb
+скоро вернусь = be back soon
+вернусь позже = bbl
+вернусь позже < be back later
+ща > one sec
+щас > one sec
+я афк > I'm afk
+я отойду > I'll be away for a bit
+отошёл > afk
+иди сюда = come here
+иди сюда < come
+иди сюда < come here pls
+идите сюда > come here
+подойди > come here
+подойди сюда > come here
+за мной = follow me
+иди за мной > follow me
+идите за мной > follow me
+все за мной > everyone follow me
+помогите = help
+помогите < help me pls
+помогите < someone help
+помогите < help pls
+помогите < help plz
+помогите < halp
+помоги = help me
+помоги < help me
+помоги мне > help me
+помогите мне > help me
+помогите пожалуйста > help please
+помоги, пожалуйста = help me, please
+нужна помощь = I need help
+мне нужна помощь > I need help
+спасите > help
+спасите меня > save me
+стой = stop
+стоп > stop
+остановись > stop
+хватит = enough
+хватит < stop it
+не надо = don't
+не надо < dont
+не надо < pls dont
+не делай так = don't do that
+не знаю = I don't know
+не знаю < i dont know
+не знаю < idk
+не знаю < dunno
+не знаю < i dunno
+я не знаю > I don't know
+без понятия > no idea
+хз > no idea
+понятия не имею = no idea
+понятия не имею < no clue
+понятия не имею < no idea
+не понимаю = I don't understand
+не понимаю < i dont understand
+я не понимаю > I don't understand
+не понял = I didn't get it
+не понял < i didnt get it
+не поняла > I didn't get it
+что = what
+что < wut
+что < wat
+что < what
+чего > what
+шо > what
+а > huh
+а < huh
+в смысле = what do you mean
+в смысле < wdym
+почему = why
+почему < y
+почему < why tho
+почему нет = why not
+зачем > why
+как = how
+как так = how come
+как это > how come
+когда = when
+где = where
+куда = where to
+откуда = where from
+кто = who
+кто это = who is that
+кто ты = who are you
+сколько = how much
+сколько стоит = how much is it
+сколько времени = what time is it
+который час > what time is it
+что это = what is this
+что это < what's that
+что это < whats that
+что это < what is that
+что это такое > what is this
+что случилось = what happened
+что случилось < what happend
+что случилось < wth happened
+что происходит = what's going on
+что происходит < whats going on
+что там = what's there
+серьёзно = seriously
+серьёзно < srsly
+серьёзно < for real
+серьёзно < fr
+правда = really
+правда < really
+правда < rly
+реально > really
+точно = exactly
+точно < exactly
+именно > exactly
+вот именно = exactly
+вот именно < ikr
+может быть = maybe
+может быть < maybe
+может быть < mb
+может быть < perhaps
+может > maybe
+мб > maybe
+возможно > possibly
+наверное = probably
+наверное < probably
+наверно > probably
+не думаю = I don't think so
+не думаю < i dont think so
+думаю да = I think so
+думаю нет > I don't think so
+думаю > I think so
+имхо = imho
+имхо < imo
+без проблем = no problem
+без проблем < no prob
+без проблем < no problem
+без проблем < sure thing
+нет проблем > no problem
+ничего страшного = no worries
+ничего страшного < no worries
+ничего страшного < its ok
+ничего страшного < it's ok
+ничего страшного < it's fine
+ничего страшного < its fine
+всё нормально > it's fine
+неважно = never mind
+неважно < nvm
+неважно < nevermind
+неважно < never mind
+забей > never mind
+забудь = forget it
+проехали > never mind
+всё равно = whatever
+всё равно < whatever
+всё равно < wtv
+мне всё равно = I don't care
+мне всё равно < idc
+мне всё равно < i dont care
+пофиг > whatever
+как хочешь = as you wish
+как хочешь < up to you
+как скажешь > whatever you say
+молодец = well done
+молодец < gj
+молодец < good job
+молодец < nice job
+молодец < nice one
+молодец < wd
+молодцы > well done
+красава > nice one
+хорошая игра = good game
+хорошо сыграно = well played
+удачи = good luck
+удачи < gl
+удачи < good luck
+удачи < gl hf
+удачи < glhf
+удачи < gl hf all
+удачи всем > good luck everyone
+всем удачи > good luck everyone
+повезло = lucky
+повезло < lucky
+повезло < lucky you
+не повезло = unlucky
+не повезло < unlucky
+не повезло < unlucky bro
+жаль = too bad
+жаль < too bad
+жаль < sad
+жаль < what a pity
+очень жаль > that's a shame
+обидно > that's a shame
+отстой = that sucks
+отстой < that sucks
+отстой < it sucks
+поздравляю = congrats
+поздравляю < gz
+поздравляю < grats
+поздравляю < gratz
+поздравляю < congratulations
+поздравляю < congratz
+с днём рождения = happy birthday
+с днём рождения < hbd
+с днём рождения < happy bday
+с новым годом = happy new year
+мне пора = I have to go
+мне пора < gtg
+мне пора < g2g
+мне пора < got to go
+мне пора < gotta go
+мне пора < i gotta go
+мне пора < i have to go
+мне надо идти > I have to go
+мне нужно идти > I have to go
+я пошёл = I'm off
+я пошёл < im off
+я пошла > I'm off
+я ушёл > I'm off
+я спать = going to sleep
+я спать < going to bed
+я спать < off to bed
+я спать < gonna sleep
+я спать < going to sleep
+пойду спать > going to sleep
+спокойной ночи = good night
+спокойной ночи < gn
+спокойной ночи < gnight
+спокойной ночи < nite
+всем спокойной ночи > good night everyone
+я занят = I'm busy
+я занят < im busy
+я занята > I'm busy
+я свободен = I'm free
+я свободен < im free
+я свободна > I'm free
+я устал = I'm tired
+я устал < im tired
+я устала > I'm tired
+я голоден = I'm hungry
+я голоден < im hungry
+я голодна > I'm hungry
+я умер = I died
+я умер < i died
+я умер < im dead
+я умерла > I died
+меня убили = I got killed
+меня убили < i got killed
+я готов = I'm ready
+я готов < im ready
+я готова > I'm ready
+готов = ready
+готовы = ready
+все готовы = everyone ready
+все готовы < everyone ready
+начинаем = let's start
+начинаем < lets start
+го = let's go
+го < lets go
+го < let's goo
+го < lets goo
+го < go go
+го < gogo
+гоу > let's go
+гогого > let's go
+пошли = let's go
+погнали > let's go
+поехали > let's go
+идём > let's go
+пойдём > let's go
+давай = let's do it
+давай < lets do it
+давай < ok lets go
+давайте > let's
+ну давай > come on
+давай быстрее > hurry up
+да ладно = no way
+да ладно < no way
+да ну > no way
+не может быть > no way
+не верю > I don't believe it
+здесь = here
+сюда > here
+тут > here
+там = there
+туда > there
+вон там = over there
+вон там < over there
+смотри = look
+смотри < look
+смотри < look at this
+глянь > look
+слушай = listen
+слушай < listen
+беги = run
+беги < run
+бегите > run
+быстрее = hurry up
+быстрее < hurry
+быстрее < hurry up
+быстрее < quick
+быстрее < faster
+скорее > hurry
+осторожно = careful
+осторожно < careful
+осторожно < be careful
+осторожно < watch out
+аккуратно > careful
+берегись > watch out
+сзади = behind you
+сзади < behind you
+атакуй = attack
+атакуй < attack
+в атаку > attack
+отступаем = retreat
+отступаем < retreat
+назад = back
+вперёд = forward
+вперёд < go go go
+налево = left
+налево < left
+направо = right
+наверх = up
+вниз = down
+вверх > up
+убей его = kill him
+бей его > hit him
+дай = give me
+дай < gimme
+дай мне > give me
+дайте > give me
+можно = can I
+можно < can i
+можно < may i
+можно мне = can I have
+можно с вами = can I join you
+можно с вами < can i join
+можно с вами < can i join you
+можно с тобой > can I join you
+можно к вам > can I join you
+возьмите меня > can I join
+пошли со мной = come with me
+пошли со мной < come with me
+пойдём со мной > come with me
+го со мной > come with me
+пошли вместе = let's go together
+пошли вместе < lets go together
+кто со мной = who's with me
+кто со мной < who's with me
+кто со мной < whos with me
+кто со мной < who wants to join
+кто в пвп = who wants to PvP
+го в пвп = let's PvP
+го пвп > let's PvP
+кто в пвп < pvp anyone
+кто в пвп < anyone pvp
+кто пвп > who wants to PvP
+кто хочет = who wants
+поменяемся = wanna trade
+поменяемся < wanna trade
+поменяемся < want to trade
+поменяемся < trade
+обмен > trade
+у меня лагает = I'm lagging
+у меня лагает < im lagging
+у меня лагает < lagging
+лагает = it's lagging
+лагает < laggy
+лаги > lag
+у меня лаги > I'm lagging
+сервер лагает = server is lagging
+сервер лагает < server lag
+сервер лагает < server is lagging
+сервер лагает < server lagging
+где спавн = where is spawn
+где спавн < where is spawn
+где спавн < wheres spawn
+где спавн < where's spawn
+где база = where is the base
+где деревня = where is the village
+я на базе = I'm at the base
+я на спавне = I'm at spawn
+го на спавн > let's go to spawn
+как тебя зовут = what's your name
+как тебя зовут < whats your name
+как тебя зовут < what is your name
+как тебя зовут < what's ur name
+сколько тебе лет = how old are you
+сколько тебе лет < how old r u
+откуда ты = where are you from
+откуда ты < where r u from
+ты откуда > where are you from
+я из россии = I'm from Russia
+я из россии < im from russia
+я из украины = I'm from Ukraine
+я из казахстана = I'm from Kazakhstan
+я из беларуси = I'm from Belarus
+я из сша = I'm from the USA
+ты русский = are you Russian
+ты говоришь по-русски = do you speak Russian
+ты говоришь по-русски < do u speak russian
+говоришь по-русски > do you speak Russian
+ты говоришь по-английски = do you speak English
+ты говоришь по-английски < do u speak english
+я не говорю по-английски = I don't speak English
+я плохо говорю по-английски = my English is bad
+я плохо знаю английский > my English is bad
+я не говорю по-русски = I don't speak Russian
+я не говорю по-русски < i dont speak russian
+ты бот = are you a bot
+ты бот < are you a bot
+ты бот < r u a bot
+у меня нет = I don't have it
+у меня нет < i dont have it
+у меня нет < i dont have
+у меня есть = I have it
+нету > I don't have it
+имба = OP
+имба < op
+имба < overpowered
+нуб = noob
+нуб < noob
+нуб < newbie
+нубы > noobs
+нубас > noob
+изи = ez
+изи < ez
+изи < easy
+лаг = lag
+лаг < lag
+афк > afk
+пвп > PvP
+пве > PvE
+нпс > NPC
+нпц > NPC
+непись > NPC
+хп > HP
+лвл > lvl
+экспа > XP
+лут = loot
+лут < loot
+крафт = crafting
+крафт < craft
+скрафтить > craft
+скрафти > craft it
+спавн = spawn
+спавн < spawn
+респ > respawn
+респавн = respawn
+респавн < respawn
+тп = tp
+тп < tp
+тп ко мне > tp to me
+тпшнись > tp
+дроп = drop
+данж = dungeon
+данж < dungeon
+данжик > dungeon
+квест = quest
+квест < quest
+квесты > quests
+сервак > server
+серв > server
+админ = admin
+админ < admin
+админы > admins
+модер = mod
+модер < mod
+бан = ban
+мут = mute
+кик = kick
+пати = party
+пати < party
+тиммейт = teammate
+тиммейт < teammate
+го пати > party up?
+моб = mob
+моб < mob
+мобы = mobs
+мобы < mobs
+мобов > mobs
+зомби = zombie
+зомби < zombie
+зомби < zombies
+верстак = workbench
+верстак < workbench
+верстак < crafting table
+верстаки > workbenches
+кирка = pickaxe
+кирка < pick
+кирку > pickaxe
+
+[слова]
+я = I
+ты = you
+он = he
+она = she
+мы = we
+вы = you
+они = they
+мне = me
+меня = me
+тебе = you
+тебя = you
+нам = us
+нас = us
+вам = you
+вас = you
+им > them
+их > them
+его > him
+ему > him
+её > her
+ей > her
+мой = my
+моя > my
+моё > my
+мои > my
+твой = your
+твоя > your
+твоё > your
+твои > your
+наш = our
+наша > our
+наше > our
+наши > our
+ваш > your
+ваша > your
+ваше > your
+ваши > your
+это = this
+это < it
+этот > this
+эта > this
+эти = these
+тот = that
+та > that
+те = those
+не = not
+и = and
+или = or
+но = but
+тоже = too
+очень = very
+ещё = more
+уже = already
+всегда = always
+никогда = never
+сейчас = now
+потом = later
+скоро = soon
+сегодня = today
+завтра = tomorrow
+вчера = yesterday
+много = a lot
+мало = little
+больше = more
+меньше = less
+лучше = better
+хуже = worse
+быстро = fast
+медленно = slowly
+дома = at home
+домой = home
+игра = game
+игры = games
+игру = game
+игре = game
+игрой = game
+моб = mob
+мобы = mobs
+мобов > mobs
+спавн > spawn
+спавне > spawn
+спавна > spawn
+лут > loot
+лута > loot
+квест > quest
+квесты > quests
+данж > dungeon

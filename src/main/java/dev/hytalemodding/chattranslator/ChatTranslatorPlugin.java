@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import dev.hytalemodding.chattranslator.commands.TranslateCommand;
 import dev.hytalemodding.chattranslator.commands.TranslatorCommand;
 import dev.hytalemodding.chattranslator.core.Log;
+import dev.hytalemodding.chattranslator.core.Styled;
 import dev.hytalemodding.chattranslator.core.TranslatorCore;
 
 import javax.annotation.Nonnull;
@@ -21,7 +22,9 @@ import java.util.logging.Level;
  *
  * Переводит чат между русским и английским: каждый игрок видит сообщения на своём
  * языке. Язык игрока определяется по языку игры при первом входе, игрок может
- * сменить его в любой момент командой /tr. Уже переведённые фразы берутся из памяти.
+ * сменить его в любой момент командой /tr. Частые фразы и отдельные слова переводятся
+ * на сервере (разговорник и словарь), уже переведённые фразы берутся из памяти,
+ * остальное переводит сервис.
  */
 public class ChatTranslatorPlugin extends JavaPlugin {
 
@@ -80,7 +83,7 @@ public class ChatTranslatorPlugin extends JavaPlugin {
      * команды по имени, и зарегистрированная позже команда с тем же именем вытесняет
      * прежнюю — так встроенная {@code /lang} перекрыла команду плагина в версии 1.0.0.
      */
-    private List<String> commandCheck() {
+    private List<Styled> commandCheck() {
         List<String> working = new ArrayList<>();
         List<String> taken = new ArrayList<>();
         try {
@@ -93,23 +96,23 @@ public class ChatTranslatorPlugin extends JavaPlugin {
                 }
             }
         } catch (RuntimeException | LinkageError exception) {
-            return List.of("Проверить имена команды выбора языка не удалось: " + exception);
+            return List.of(new Styled().bad("Проверить имена команды выбора языка не удалось: " + exception));
         }
-        List<String> lines = new ArrayList<>();
+        List<Styled> lines = new ArrayList<>();
         lines.add(working.isEmpty()
-                ? "Команда выбора языка недоступна игрокам: все её имена заняты другими командами."
-                : "Команда выбора языка для игроков: " + String.join(", ", working));
+                ? new Styled().bad("Команда выбора языка недоступна игрокам: все её имена заняты другими командами.")
+                : new Styled().text("Команда выбора языка для игроков: ").command(String.join(", ", working)));
         if (!taken.isEmpty()) {
-            lines.add("Заняты другой командой сервера или плагина: " + String.join(", ", taken));
+            lines.add(new Styled().bad("Заняты другой командой сервера или плагина: ").text(String.join(", ", taken)));
         }
         return lines;
     }
 
     private void logCommandCheck() {
-        List<String> lines = this.commandCheck();
-        this.log.info(lines.get(0));
+        List<Styled> lines = this.commandCheck();
+        this.log.info(lines.get(0).plain());
         for (int i = 1; i < lines.size(); i++) {
-            this.log.warn(lines.get(i));
+            this.log.warn(lines.get(i).plain());
         }
     }
 }

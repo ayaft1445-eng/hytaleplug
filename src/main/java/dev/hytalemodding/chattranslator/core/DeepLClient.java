@@ -23,7 +23,7 @@ public final class DeepLClient implements TranslationService {
     public static final String PRO_API = "https://api.deepl.com";
 
     static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(8);
-    static final String USER_AGENT = "ChatTranslator-Hytale/1.1";
+    static final String USER_AGENT = "ChatTranslator-Hytale/1.2";
 
     private final String authorization;
     private final URI translateUri;

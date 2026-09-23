@@ -1,8 +1,8 @@
 {
     "Group": "HytaleModding",
     "Name": "chattranslator",
-    "Version": "1.1.0",
-    "Description": "Translates chat between Russian and English (DeepL, MyMemory)",
+    "Version": "1.2.0",
+    "Description": "Translates chat between Russian and English: phrasebook and dictionary on the server, DeepL or MyMemory for the rest",
     "Authors": [
         {
             "Name": "ayaft1445-eng",

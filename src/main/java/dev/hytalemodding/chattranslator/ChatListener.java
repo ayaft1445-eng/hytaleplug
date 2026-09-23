@@ -8,6 +8,7 @@ import dev.hytalemodding.chattranslator.core.Lang;
 import dev.hytalemodding.chattranslator.core.Log;
 import dev.hytalemodding.chattranslator.core.TextLanguage;
 import dev.hytalemodding.chattranslator.core.Texts;
+import dev.hytalemodding.chattranslator.core.Translation;
 import dev.hytalemodding.chattranslator.core.TranslatorCore;
 
 import java.util.List;
@@ -20,13 +21,11 @@ import java.util.concurrent.CompletableFuture;
  * Сервер рассылает сообщение списку получателей. Из списка убираются те, кому
  * нужен перевод, — остальные (и сам автор) получают сообщение как обычно и сразу.
  * Убранным игрокам плагин сам отправляет переведённое сообщение в том же оформлении,
- * что и обычный чат, как только придёт перевод. Если перевести не вышло, они
- * получают сообщение как есть — пропасть оно не может.
+ * что и обычный чат, как только будет готов перевод: частые фразы и слова переводятся
+ * сразу на сервере, остальное — сервисом. Если перевести не вышло, они получают
+ * сообщение как есть — пропасть оно не может.
  */
 final class ChatListener {
-
-    /** Цвет пометки «(перевод)» после переведённого текста. */
-    private static final String NOTE_COLOR = "#9a9a9a";
 
     private final TranslatorCore core;
     private final Log log;
@@ -61,7 +60,7 @@ final class ChatListener {
 
         if (sender != null && this.core.config().learnLanguageFromChat()
                 && this.core.players().learnFromMessage(sender.getUuid(), sender.getUsername(), sender.getLanguage(), text)) {
-            sender.sendMessage(Message.raw(Texts.learnedRussian()).color(NOTE_COLOR));
+            sender.sendMessage(Render.message(Texts.learnedRussian()));
         }
 
         ChatRouting<PlayerRef> routing = ChatRouting.split(
@@ -80,7 +79,7 @@ final class ChatListener {
             Lang reader = group.getKey();
             List<PlayerRef> recipients = group.getValue();
             this.core.delivery().enqueue(
-                    this.core.translator().translate(text, written, reader),
+                    this.core.messages().translate(text, written, reader).thenApply(Translation::text),
                     translation -> send(recipients, this.render(formatter, sender, text, translation, reader)),
                     error -> send(recipients, formatter.format(sender, text))
             );
@@ -100,7 +99,7 @@ final class ChatListener {
         if (note == null) {
             return message;
         }
-        return Message.join(message, Message.raw(" " + note).color(NOTE_COLOR));
+        return Message.join(message, Message.raw(" " + note).color(Render.NOTE_COLOR));
     }
 
     private static void send(List<PlayerRef> recipients, Message message) {

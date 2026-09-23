@@ -78,6 +78,11 @@ public final class TranslationMemory {
         return from.code() + '>' + to.code() + '|' + normalizedText;
     }
 
+    /** Есть ли фраза в памяти. В отличие от {@link #lookup}, фраза не считается встреченной. */
+    public synchronized boolean contains(String text, Lang from, Lang to) {
+        return this.entries.containsKey(key(from, to, normalize(text)));
+    }
+
     /** Перевод из памяти или {@code null}. Найденная фраза считается встреченной ещё раз. */
     public synchronized String lookup(String text, Lang from, Lang to) {
         Entry entry = this.entries.get(key(from, to, normalize(text)));

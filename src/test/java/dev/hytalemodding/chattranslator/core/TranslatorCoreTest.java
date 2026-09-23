@@ -98,10 +98,10 @@ class TranslatorCoreTest {
             assertFalse(core.isActive(), "DeepL без ключа пропускается");
             writeConfig("{\"Translators\": [\"deepl\"], \"DeepLApiKey\": \"test-key:fx\"}");
 
-            List<String> reply = core.reload();
+            List<Styled> reply = core.reload();
 
             assertTrue(core.isActive());
-            assertTrue(reply.stream().anyMatch(line -> line.contains("DeepL")), reply.toString());
+            assertTrue(reply.stream().anyMatch(line -> line.plain().contains("DeepL")), reply.toString());
         } finally {
             core.stop();
         }
@@ -115,10 +115,10 @@ class TranslatorCoreTest {
             assertEquals(2, core.translator().providers().size());
             writeConfig("{\"DeepLApiKey\": test-key}");
 
-            List<String> reply = core.reload();
+            List<Styled> reply = core.reload();
 
             assertEquals(2, core.translator().providers().size(), "прежние настройки остались");
-            assertTrue(reply.get(0).contains("не прочитан"), reply.toString());
+            assertTrue(reply.get(0).plain().contains("не прочитан"), reply.toString());
         } finally {
             core.stop();
         }
@@ -136,8 +136,8 @@ class TranslatorCoreTest {
             assertTrue(lines.get(1).startsWith("MyMemory: не работает"), lines.toString());
             assertNull(core.translator().activeProvider(), "оба недоступны — оба на паузе");
 
-            List<String> status = core.status().join();
-            assertTrue(status.stream().anyMatch(line -> line.contains("все переводчики на паузе")), status.toString());
+            List<Styled> status = core.status().join();
+            assertTrue(status.stream().anyMatch(line -> line.plain().contains("все переводчики на паузе")), status.toString());
         } finally {
             core.stop();
         }
@@ -157,6 +157,55 @@ class TranslatorCoreTest {
             assertEquals("где спавн", second.memory().lookup("Where is spawn", Lang.EN, Lang.RU));
         } finally {
             second.stop();
+        }
+    }
+
+    @Test
+    void serverPhrasesAreCreatedReadAndReloaded() throws Exception {
+        TranslatorCore core = core();
+        try {
+            Path phrases = this.dir.resolve("phrases.txt");
+            assertTrue(Files.exists(phrases), "phrases.txt создаётся с примерами");
+            assertEquals("hi", core.messages().translate("привет", Lang.RU, Lang.EN).join().text());
+
+            Files.writeString(phrases, "привет = hey there\nкак сам = how's it going\nпросто строка", StandardCharsets.UTF_8);
+            List<Styled> reply = core.reload();
+
+            assertEquals("hey there", core.messages().translate("привет", Lang.RU, Lang.EN).join().text(),
+                    "фразы сервера важнее встроенных");
+            assertEquals("How's it going?", core.messages().translate("Как сам?", Lang.RU, Lang.EN).join().text());
+            assertTrue(reply.stream().anyMatch(line -> line.plain().contains("строка 3")), reply.toString());
+        } finally {
+            core.stop();
+        }
+    }
+
+    @Test
+    void phrasesInWindows1251AreReadToo() throws Exception {
+        Files.write(this.dir.resolve("phrases.txt"), "го на арену = let's go to the arena".getBytes("windows-1251"));
+
+        TranslatorCore core = core();
+        try {
+            assertEquals("let's go to the arena", core.messages().translate("го на арену", Lang.RU, Lang.EN).join().text());
+            assertTrue(this.console.stream().anyMatch(line -> line.contains("Windows-1251")), this.console.toString());
+        } finally {
+            core.stop();
+        }
+    }
+
+    @Test
+    void dictionaryLoadsAndStatusShowsLocalTranslation() {
+        TranslatorCore core = core();
+        try {
+            core.loadDictionary();
+            assertEquals("sword", core.messages().translate("меч", Lang.RU, Lang.EN).join().text());
+
+            List<Styled> status = core.status().join();
+            assertTrue(status.stream().anyMatch(line -> line.plain().startsWith("Перевод на сервере: включён")), status.toString());
+            assertTrue(status.stream().anyMatch(line -> line.plain().startsWith("Без сервиса переведено сообщений: 1 целиком")),
+                    status.toString());
+        } finally {
+            core.stop();
         }
     }
 

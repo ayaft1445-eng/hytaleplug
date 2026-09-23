@@ -107,6 +107,26 @@ class TranslatorConfigTest {
         assertEquals("key:fx", rewritten.get("DeepLApiKey"));
         assertEquals(List.of("deepl", "mymemory"), rewritten.get("Translators"));
         assertEquals("", rewritten.get("MyMemoryEmail"));
+        assertEquals(true, rewritten.get("LocalDictionary"), "перевод на сервере включается и у старых настроек");
+        assertEquals(1L, rewritten.get("LocalMaxWords"));
+    }
+
+    @Test
+    void localTranslationSettings() throws Exception {
+        Path file = this.dir.resolve("config.json");
+        TranslatorConfig defaults = TranslatorConfig.loadOrCreate(file);
+        assertTrue(defaults.localDictionary());
+        assertEquals(1, defaults.localMaxWords());
+
+        Files.writeString(file, "{\"LocalDictionary\": false, \"LocalMaxWords\": 3}", StandardCharsets.UTF_8);
+        TranslatorConfig custom = TranslatorConfig.loadOrCreate(file);
+        assertFalse(custom.localDictionary());
+        assertEquals(3, custom.localMaxWords());
+
+        Files.writeString(file, "{\"LocalMaxWords\": 50}", StandardCharsets.UTF_8);
+        TranslatorConfig clamped = TranslatorConfig.loadOrCreate(file);
+        assertEquals(TranslatorConfig.MAX_LOCAL_WORDS, clamped.localMaxWords());
+        assertEquals(1, clamped.warnings().size(), clamped.warnings().toString());
     }
 
     @Test

@@ -1,10 +1,11 @@
 package dev.hytalemodding.chattranslator.commands;
 
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
+import dev.hytalemodding.chattranslator.Render;
+import dev.hytalemodding.chattranslator.core.Styled;
 import dev.hytalemodding.chattranslator.core.TranslatorCore;
 
 import javax.annotation.Nonnull;
@@ -16,8 +17,9 @@ import java.util.function.Supplier;
 
 /**
  * {@code /translator status} — какие переводчики работают, сколько символов осталось,
- * сколько фраз в памяти, какие имена команды выбора языка доступны игрокам;
- * {@code /translator reload} — перечитать config.json.
+ * сколько сообщений переведено без сервиса, сколько фраз в памяти, какие имена команды
+ * выбора языка доступны игрокам; {@code /translator reload} — перечитать config.json
+ * и phrases.txt.
  *
  * Для администраторов: право на команду сервер создаёт сам, у операторов оно есть.
  * В консоли сервера команда пишется без косой черты: {@code translator status}.
@@ -25,10 +27,10 @@ import java.util.function.Supplier;
 public class TranslatorCommand extends AbstractCommand {
 
     private final TranslatorCore core;
-    private final Supplier<List<String>> commandCheck;
+    private final Supplier<List<Styled>> commandCheck;
     private final RequiredArg<String> actionArg;
 
-    public TranslatorCommand(TranslatorCore core, Supplier<List<String>> commandCheck) {
+    public TranslatorCommand(TranslatorCore core, Supplier<List<Styled>> commandCheck) {
         super("translator", "ChatTranslator: status | reload");
         this.core = core;
         this.commandCheck = commandCheck;
@@ -49,14 +51,15 @@ public class TranslatorCommand extends AbstractCommand {
                 send(context, this.core.reload());
                 return CompletableFuture.completedFuture(null);
             default:
-                context.sendMessage(Message.raw("Использование: /translator status или /translator reload"));
+                context.sendMessage(Render.message(new Styled().text("Использование: ").command("/translator status")
+                        .text(" или ").command("/translator reload")));
                 return CompletableFuture.completedFuture(null);
         }
     }
 
-    private static void send(CommandContext context, List<String> lines) {
-        for (String line : lines) {
-            context.sendMessage(Message.raw(line));
+    private static void send(CommandContext context, List<Styled> lines) {
+        for (Styled line : lines) {
+            context.sendMessage(Render.message(line));
         }
     }
 }

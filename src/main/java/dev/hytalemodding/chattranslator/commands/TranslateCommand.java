@@ -2,15 +2,16 @@ package dev.hytalemodding.chattranslator.commands;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import dev.hytalemodding.chattranslator.Render;
 import dev.hytalemodding.chattranslator.core.CommandInput;
 import dev.hytalemodding.chattranslator.core.Lang;
 import dev.hytalemodding.chattranslator.core.PlayerLanguages;
+import dev.hytalemodding.chattranslator.core.Styled;
 import dev.hytalemodding.chattranslator.core.TextLanguage;
 import dev.hytalemodding.chattranslator.core.Texts;
 import dev.hytalemodding.chattranslator.core.Translator;
@@ -72,7 +73,9 @@ public class TranslateCommand extends AbstractPlayerCommand {
 
         List<String> arguments = CommandInput.arguments(context.getInputString(), names());
         if (arguments.isEmpty()) {
-            reply(context, Texts.info(current.lang(), current.translate()));
+            for (Styled line : Texts.info(current.lang(), current.translate())) {
+                reply(context, line);
+            }
             if (!this.core.isActive()) {
                 reply(context, Texts.notConfigured(current.lang()));
             }
@@ -90,7 +93,7 @@ public class TranslateCommand extends AbstractPlayerCommand {
         }
 
         PlayerLanguages.Entry entry;
-        String answer;
+        Styled answer;
         switch (choice) {
             case RU:
                 entry = players.choose(id, name, gameLanguage, Lang.RU);
@@ -115,7 +118,10 @@ public class TranslateCommand extends AbstractPlayerCommand {
         }
     }
 
-    /** {@code /tr test текст}: переводит текст на другой язык и показывает только самому игроку. */
+    /**
+     * {@code /tr test текст}: переводит текст на другой язык и показывает только самому
+     * игроку — вместе с тем, откуда взят перевод (разговорник, словарь, память, сервис).
+     */
     private void test(CommandContext context, Lang reader, String text) {
         if (text.isBlank()) {
             reply(context, Texts.testUsage(reader));
@@ -127,7 +133,7 @@ public class TranslateCommand extends AbstractPlayerCommand {
             return;
         }
         Lang target = written == Lang.RU ? Lang.EN : Lang.RU;
-        this.core.translator().translate(text, written, target).whenComplete((translation, error) -> {
+        this.core.messages().translate(text, written, target).whenComplete((translation, error) -> {
             if (error == null) {
                 reply(context, Texts.testResult(reader, text, translation));
             } else {
@@ -136,7 +142,7 @@ public class TranslateCommand extends AbstractPlayerCommand {
         });
     }
 
-    private static void reply(CommandContext context, String text) {
-        context.sendMessage(Message.raw(text));
+    private static void reply(CommandContext context, Styled text) {
+        context.sendMessage(Render.message(text));
     }
 }

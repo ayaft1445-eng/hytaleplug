@@ -83,7 +83,7 @@ public final class Translator {
     private volatile List<Provider> providers = List.of();
 
     /** Одинаковые фразы, отправленные одновременно, ждут один и тот же ответ. */
-    private final Map<String, CompletableFuture<String>> inFlight = new ConcurrentHashMap<>();
+    private final Map<String, CompletableFuture<Result>> inFlight = new ConcurrentHashMap<>();
 
     private long lastWarningAt = Long.MIN_VALUE / 2;
 
@@ -131,11 +131,40 @@ public final class Translator {
         }
     }
 
+    /** Перевод и откуда он: имя переводчика или {@link #MEMORY}. */
+    public static final class Result {
+
+        private final String text;
+        private final String source;
+
+        Result(String text, String source) {
+            this.text = text;
+            this.source = source;
+        }
+
+        public String text() {
+            return this.text;
+        }
+
+        /** Имя переводчика («DeepL», «MyMemory») или {@link #MEMORY}. */
+        public String source() {
+            return this.source;
+        }
+    }
+
+    /** Источник перевода «память переводов». */
+    public static final String MEMORY = "memory";
+
     public CompletableFuture<String> translate(String text, Lang from, Lang to) {
+        return this.translateDetailed(text, from, to).thenApply(Result::text);
+    }
+
+    /** Как {@link #translate}, но ещё и сообщает, кто перевёл. */
+    public CompletableFuture<Result> translateDetailed(String text, Lang from, Lang to) {
         String remembered = this.memory.lookup(text, from, to);
         if (remembered != null) {
             this.fromMemory.incrementAndGet();
-            return CompletableFuture.completedFuture(remembered);
+            return CompletableFuture.completedFuture(new Result(remembered, MEMORY));
         }
         List<Provider> chain = this.providers;
         if (chain.isEmpty()) {
@@ -144,8 +173,8 @@ public final class Translator {
         }
 
         String key = from.code() + '>' + to.code() + '|' + TranslationMemory.normalize(text);
-        CompletableFuture<String> result = new CompletableFuture<>();
-        CompletableFuture<String> already = this.inFlight.putIfAbsent(key, result);
+        CompletableFuture<Result> result = new CompletableFuture<>();
+        CompletableFuture<Result> already = this.inFlight.putIfAbsent(key, result);
         if (already != null) {
             return already.copy();
         }
@@ -155,7 +184,7 @@ public final class Translator {
 
     /** Отдаёт фразу первому переводчику из очереди, начиная с {@code index}, который не на паузе. */
     private void attempt(List<Provider> chain, int index, String text, Lang from, Lang to,
-                         String key, CompletableFuture<String> result, Throwable lastError) {
+                         String key, CompletableFuture<Result> result, Throwable lastError) {
         long now = this.clock.getAsLong();
         int position = index;
         while (position < chain.size() && chain.get(position).isPaused(now)) {
@@ -182,7 +211,7 @@ public final class Translator {
             if (error == null && translation != null && !translation.isBlank()) {
                 this.inFlight.remove(key, result);
                 this.memory.remember(text, from, to, translation);
-                result.complete(translation);
+                result.complete(new Result(translation, provider.name()));
                 return;
             }
             Throwable cause = error != null ? unwrap(error)

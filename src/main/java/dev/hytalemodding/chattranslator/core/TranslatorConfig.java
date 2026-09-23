@@ -28,10 +28,13 @@ public final class TranslatorConfig {
     static final String KEY_LEARN = "LearnLanguageFromChat";
     static final String KEY_JOIN_HINT = "JoinHint";
     static final String KEY_MEMORY_SIZE = "MemoryMaxPhrases";
+    static final String KEY_LOCAL = "LocalDictionary";
+    static final String KEY_LOCAL_WORDS = "LocalMaxWords";
     static final String KEY_HELP = "_help";
 
     static final int MIN_MEMORY = 100;
     static final int MAX_MEMORY = 1_000_000;
+    static final int MAX_LOCAL_WORDS = 5;
 
     /** Переводчики, которые знает плагин. */
     public static final String DEEPL = "deepl";
@@ -48,7 +51,10 @@ public final class TranslatorConfig {
             "ShowOriginal — вместо пометки показывать в скобках исходный текст сообщения: true или false.",
             "LearnLanguageFromChat — если игрок, у которого игра на английском, пишет по-русски, переводить ему на русский.",
             "JoinHint — при первом входе на сервер подсказать игроку команду /tr: true или false.",
-            "MemoryMaxPhrases — сколько фраз хранить в памяти переводов (файл memory.json)."
+            "MemoryMaxPhrases — сколько фраз хранить в памяти переводов (файл memory.json).",
+            "LocalDictionary — переводить частые фразы и отдельные слова на сервере, без сервиса перевода (разговорник, словарь и phrases.txt): true или false. При false всё переводит сервис.",
+            "LocalMaxWords — сколько слов подряд можно перевести по словарю без сервиса: 1 — только сообщения из одного слова (точнее всего), 2–5 — больше экономии, но перевод по словам грубее, 0 — только фразы из разговорника.",
+            "Свои переводы фраз и слов — в файле phrases.txt рядом с этим файлом."
     );
 
     private String deeplApiKey = "";
@@ -60,6 +66,8 @@ public final class TranslatorConfig {
     private boolean learnLanguageFromChat = true;
     private boolean joinHint = true;
     private int memoryMaxPhrases = 20_000;
+    private boolean localDictionary = true;
+    private int localMaxWords = 1;
 
     /** Замечания к значениям в файле: неизвестный язык, слишком маленькая память и т. п. */
     private final List<String> warnings = new ArrayList<>();
@@ -115,6 +123,15 @@ public final class TranslatorConfig {
             memory = clamped;
         }
         config.memoryMaxPhrases = (int) memory;
+
+        config.localDictionary = Json.getBoolean(json, KEY_LOCAL, true);
+        long words = Json.getLong(json, KEY_LOCAL_WORDS, 1);
+        if (words < 0 || words > MAX_LOCAL_WORDS) {
+            long clamped = Math.max(0, Math.min(MAX_LOCAL_WORDS, words));
+            config.warnings.add(KEY_LOCAL_WORDS + ": " + words + " вне границ 0–" + MAX_LOCAL_WORDS + ", используется " + clamped + ".");
+            words = clamped;
+        }
+        config.localMaxWords = (int) words;
         return config;
     }
 
@@ -162,6 +179,8 @@ public final class TranslatorConfig {
         json.put(KEY_LEARN, this.learnLanguageFromChat);
         json.put(KEY_JOIN_HINT, this.joinHint);
         json.put(KEY_MEMORY_SIZE, this.memoryMaxPhrases);
+        json.put(KEY_LOCAL, this.localDictionary);
+        json.put(KEY_LOCAL_WORDS, this.localMaxWords);
         return json;
     }
 
@@ -204,6 +223,16 @@ public final class TranslatorConfig {
 
     public int memoryMaxPhrases() {
         return this.memoryMaxPhrases;
+    }
+
+    /** Переводить ли частые фразы и слова на сервере, без сервиса. */
+    public boolean localDictionary() {
+        return this.localDictionary;
+    }
+
+    /** Сколько слов подряд можно перевести по словарю. */
+    public int localMaxWords() {
+        return this.localMaxWords;
     }
 
     public List<String> warnings() {
