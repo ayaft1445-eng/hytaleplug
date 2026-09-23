@@ -245,7 +245,6 @@ hah
 отлично = great
 отлично < excellent
 отлично < perfect
-отлично < good job
 норм > fine
 нормально > fine
 ура = hooray
@@ -278,9 +277,9 @@ hah
 
 [фразы]
 привет, как дела = hi, how are you
-привет как дела < hi how are you
-привет как дела < hey how are you
-привет как дела < hello how are you
+привет, как дела < hi how are you
+привет, как дела < hey how are you
+привет, как дела < hello how are you
 привет как ты > hi, how are you
 всем привет как дела > hi everyone, how are you
 понятно = I see
@@ -706,7 +705,7 @@ hah
 давай = let's do it
 давай < lets do it
 давай < ok lets go
-давайте > let's
+давайте > let's do it
 ну давай > come on
 давай быстрее > hurry up
 да ладно = no way
@@ -968,7 +967,7 @@ hah
 этот > this
 эта > this
 эти = these
-тот = that
+тот > that
 та > that
 те = those
 не = not
