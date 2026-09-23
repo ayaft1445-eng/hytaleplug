@@ -209,14 +209,15 @@ public final class Translator {
 
     private void onFailure(Provider provider, Throwable cause, List<Provider> chain, int nextIndex) {
         long pause = pauseFor(cause);
-        String reason = provider.name() + ": " + describe(cause);
+        String described = describe(cause);
+        String reason = described.contains(provider.name()) ? described : provider.name() + ": " + described;
         if (pause <= 0) {
             this.warnOccasionally(reason);
             return;
         }
         long now = this.clock.getAsLong();
         boolean alreadyPaused = provider.isPaused(now);
-        provider.pauseReason = describe(cause);
+        provider.pauseReason = described;
         provider.pausedUntil = now + pause;
         if (!alreadyPaused) {
             String replacement = null;
