@@ -12,10 +12,12 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
- * {@code /translator status} — работает ли ключ DeepL, сколько символов осталось,
- * сколько фраз в памяти; {@code /translator reload} — перечитать config.json.
+ * {@code /translator status} — какие переводчики работают, сколько символов осталось,
+ * сколько фраз в памяти, какие имена команды выбора языка доступны игрокам;
+ * {@code /translator reload} — перечитать config.json.
  *
  * Для администраторов: право на команду сервер создаёт сам, у операторов оно есть.
  * В консоли сервера команда пишется без косой черты: {@code translator status}.
@@ -23,11 +25,13 @@ import java.util.concurrent.CompletableFuture;
 public class TranslatorCommand extends AbstractCommand {
 
     private final TranslatorCore core;
+    private final Supplier<List<String>> commandCheck;
     private final RequiredArg<String> actionArg;
 
-    public TranslatorCommand(TranslatorCore core) {
+    public TranslatorCommand(TranslatorCore core, Supplier<List<String>> commandCheck) {
         super("translator", "ChatTranslator: status | reload");
         this.core = core;
+        this.commandCheck = commandCheck;
         this.actionArg = this.withRequiredArg("action", "status | reload", ArgTypes.STRING);
     }
 
@@ -37,7 +41,10 @@ public class TranslatorCommand extends AbstractCommand {
         String action = context.get(this.actionArg).trim().toLowerCase(Locale.ROOT);
         switch (action) {
             case "status":
-                return this.core.status().thenAccept(lines -> send(context, lines));
+                return this.core.status().thenAccept(lines -> {
+                    send(context, lines);
+                    send(context, this.commandCheck.get());
+                });
             case "reload":
                 send(context, this.core.reload());
                 return CompletableFuture.completedFuture(null);

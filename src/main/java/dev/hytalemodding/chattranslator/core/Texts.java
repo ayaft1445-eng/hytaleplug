@@ -8,9 +8,9 @@ public final class Texts {
     private Texts() {
     }
 
-    /** Что игрок написал после {@code /lang}. */
+    /** Что игрок написал после {@code /tr}. */
     public enum Choice {
-        RU, EN, AUTO, OFF;
+        RU, EN, AUTO, OFF, TEST;
 
         /** Понимает {@code ru}, {@code русский}, {@code eng}, {@code выкл} и т. п.; иначе {@code null}. */
         public static Choice parse(String value) {
@@ -40,6 +40,10 @@ public final class Texts {
                 case "выкл":
                 case "нет":
                     return OFF;
+                case "test":
+                case "тест":
+                case "проверка":
+                    return TEST;
                 default:
                     return null;
             }
@@ -54,19 +58,37 @@ public final class Texts {
     public static String joinHint(Lang lang) {
         if (lang == Lang.RU) {
             return prefix(lang) + "Сообщения на английском будут переводиться для вас на русский. "
-                    + "/lang en — переводить на английский, /lang off — без перевода.";
+                    + "/tr en — переводить на английский, /tr off — без перевода, /tr — все настройки.";
         }
         return prefix(lang) + "Russian chat messages will be translated into English for you. "
-                + "/lang ru — translate into Russian, /lang off — no translation.";
+                + "/tr ru — translate into Russian, /tr off — no translation, /tr — all options.";
     }
 
     /** Игрок с английской игрой написал по-русски, и ему включён перевод на русский. */
     public static String learnedRussian() {
         return prefix(Lang.RU) + "Вы пишете по-русски, поэтому сообщения на английском теперь "
-                + "переводятся для вас на русский. Вернуть английский: /lang en";
+                + "переводятся для вас на русский. Вернуть английский: /tr en";
     }
 
-    /** Ответ на {@code /lang ru} и {@code /lang en}. */
+    /** Ответ на {@code /tr} без слов: что включено сейчас и как поменять. */
+    public static String info(Lang lang, boolean translate) {
+        if (lang == Lang.RU) {
+            String now = translate
+                    ? "Ваш язык чата: русский — сообщения на английском переводятся для вас на русский."
+                    : "Перевод для вас выключен — вы видите все сообщения как есть.";
+            return prefix(lang) + now + " Сменить: /tr en — английский, /tr ru — русский, /tr off — без перевода, "
+                    + "/tr auto — как в игре. Проверить перевод: /tr test привет. "
+                    + "Свои сообщения вы всегда видите как написали — перевод видят другие.";
+        }
+        String now = translate
+                ? "Your chat language: English — Russian messages are translated into English for you."
+                : "Translation is off for you — you see every message as written.";
+        return prefix(lang) + now + " Change: /tr ru — Russian, /tr en — English, /tr off — no translation, "
+                + "/tr auto — game language. Try it: /tr test hello. "
+                + "You always see your own messages as you wrote them — others see the translation.";
+    }
+
+    /** Ответ на {@code /tr ru} и {@code /tr en}. */
     public static String chosen(Lang lang) {
         if (lang == Lang.RU) {
             return prefix(lang) + "Язык чата: русский. Сообщения на английском будут переводиться для вас на русский.";
@@ -74,7 +96,7 @@ public final class Texts {
         return prefix(lang) + "Chat language: English. Russian messages will be translated into English for you.";
     }
 
-    /** Ответ на {@code /lang auto}. */
+    /** Ответ на {@code /tr auto}. */
     public static String reset(Lang lang) {
         if (lang == Lang.RU) {
             return prefix(lang) + "Язык снова берётся из языка игры: русский.";
@@ -82,25 +104,56 @@ public final class Texts {
         return prefix(lang) + "Your language is taken from the game language again: English.";
     }
 
-    /** Ответ на {@code /lang off}. */
+    /** Ответ на {@code /tr off}. */
     public static String turnedOff(Lang lang) {
         if (lang == Lang.RU) {
             return prefix(lang) + "Перевод выключен: вы видите все сообщения так, как их написали. "
-                    + "Включить: /lang ru или /lang en";
+                    + "Включить: /tr ru или /tr en";
         }
         return prefix(lang) + "Translation is off: you see every message as it was written. "
-                + "Turn it back on: /lang en or /lang ru";
+                + "Turn it back on: /tr en or /tr ru";
     }
 
-    /** Непонятный аргумент {@code /lang}. */
+    /** Непонятное слово после {@code /tr}. */
     public static String usage(Lang lang) {
         if (lang == Lang.RU) {
-            return prefix(lang) + "Напишите /lang ru, /lang en, /lang auto (как в игре) или /lang off (без перевода).";
+            return prefix(lang) + "Напишите /tr ru, /tr en, /tr auto (как в игре), /tr off (без перевода) "
+                    + "или /tr test текст (проверить перевод).";
         }
-        return prefix(lang) + "Type /lang en, /lang ru, /lang auto (game language) or /lang off (no translation).";
+        return prefix(lang) + "Type /tr en, /tr ru, /tr auto (game language), /tr off (no translation) "
+                + "or /tr test text (try a translation).";
     }
 
-    /** Добавка к ответу на {@code /lang}, пока администратор не вписал ключ DeepL. */
+    /** {@code /tr test} без текста. */
+    public static String testUsage(Lang lang) {
+        if (lang == Lang.RU) {
+            return prefix(lang) + "Напишите текст после /tr test, например: /tr test привет всем";
+        }
+        return prefix(lang) + "Put some text after /tr test, for example: /tr test hello everyone";
+    }
+
+    /** Результат {@code /tr test}. */
+    public static String testResult(Lang lang, String original, String translation) {
+        return prefix(lang) + original.trim() + " -> " + translation;
+    }
+
+    /** {@code /tr test} не смог перевести. */
+    public static String testFailed(Lang lang, String reason) {
+        if (lang == Lang.RU) {
+            return prefix(lang) + "Перевести не удалось: " + reason;
+        }
+        return prefix(lang) + "Translation failed: " + reason;
+    }
+
+    /** {@code /tr test} с текстом без букв. */
+    public static String testNothing(Lang lang) {
+        if (lang == Lang.RU) {
+            return prefix(lang) + "Здесь нечего переводить: нужны русские или английские буквы.";
+        }
+        return prefix(lang) + "Nothing to translate: the text needs Russian or English letters.";
+    }
+
+    /** Добавка к ответу на {@code /tr}, пока ни один переводчик не настроен. */
     public static String notConfigured(Lang lang) {
         if (lang == Lang.RU) {
             return prefix(lang) + "Выбор сохранён, но перевод на сервере ещё не настроен.";

@@ -22,17 +22,16 @@ public final class DeepLClient implements TranslationService {
     public static final String FREE_API = "https://api-free.deepl.com";
     public static final String PRO_API = "https://api.deepl.com";
 
-    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(8);
-    private static final String USER_AGENT = "ChatTranslator-Hytale/1.0";
+    static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(8);
+    static final String USER_AGENT = "ChatTranslator-Hytale/1.1";
 
     private final String authorization;
     private final URI translateUri;
     private final URI usageUri;
     private final HttpClient http;
 
-    public DeepLClient(String apiKey) {
-        this(apiKey, baseUrlFor(apiKey), HttpClient.newBuilder().connectTimeout(CONNECT_TIMEOUT).build());
+    public DeepLClient(String apiKey, HttpClient http) {
+        this(apiKey, baseUrlFor(apiKey), http);
     }
 
     DeepLClient(String apiKey, String baseUrl, HttpClient http) {
@@ -50,20 +49,9 @@ public final class DeepLClient implements TranslationService {
         return isFreeKey(apiKey) ? FREE_API : PRO_API;
     }
 
-    /** Ответ DeepL с кодом ошибки и объяснением по-русски. */
-    public static final class DeepLException extends RuntimeException {
-
-        private final int status;
-
-        DeepLException(int status, String message) {
-            super(message);
-            this.status = status;
-        }
-
-        /** HTTP-код ответа DeepL. */
-        public int status() {
-            return this.status;
-        }
+    @Override
+    public String name() {
+        return "DeepL";
     }
 
     /** Остаток символов: сколько потрачено в этом месяце и сколько всего можно. */
@@ -124,37 +112,37 @@ public final class DeepLClient implements TranslationService {
                 });
     }
 
-    /** Перестаёт принимать новые запросы; начатые доходят до конца. */
-    public void shutdown() {
-        this.http.shutdown();
-    }
-
     private static String checked(HttpResponse<String> response) {
         int status = response.statusCode();
         if (status == 200) {
             return response.body();
         }
-        throw new DeepLException(status, explain(status));
+        throw error(status);
     }
 
-    static String explain(int status) {
+    static ServiceException error(int status) {
         switch (status) {
-            case 400:
-                return "DeepL не понял запрос (код 400)";
             case 401:
             case 403:
-                return "DeepL не принял ключ (код " + status + "): проверьте DeepLApiKey в config.json";
-            case 413:
-                return "сообщение слишком длинное для DeepL (код 413)";
-            case 429:
-                return "слишком много запросов подряд, DeepL просит подождать (код 429)";
+                return new ServiceException(ServiceException.Kind.KEY_REJECTED, status,
+                        "DeepL не принял ключ (код " + status + "): проверьте DeepLApiKey в config.json");
+            case 451:
+                return new ServiceException(ServiceException.Kind.REGION_BLOCKED, status,
+                        "DeepL отказал с кодом 451: он не обслуживает страну, где стоит сервер");
             case 456:
-                return "исчерпан месячный лимит символов DeepL (код 456); бесплатный тариф — 500 000 символов в месяц";
+                return new ServiceException(ServiceException.Kind.QUOTA, status,
+                        "исчерпан месячный лимит символов DeepL (код 456); бесплатный тариф — 500 000 символов в месяц");
+            case 429:
+                return new ServiceException(ServiceException.Kind.TOO_MANY_REQUESTS, status,
+                        "слишком много запросов подряд, DeepL просит подождать (код 429)");
+            case 400:
+                return new ServiceException(ServiceException.Kind.OTHER, status, "DeepL не понял запрос (код 400)");
+            case 413:
+                return new ServiceException(ServiceException.Kind.OTHER, status, "сообщение слишком длинное для DeepL (код 413)");
             default:
-                if (status >= 500) {
-                    return "DeepL временно недоступен (код " + status + ")";
-                }
-                return "DeepL ответил кодом " + status;
+                return new ServiceException(ServiceException.Kind.OTHER, status, status >= 500
+                        ? "DeepL временно недоступен (код " + status + ")"
+                        : "DeepL ответил кодом " + status);
         }
     }
 
@@ -162,7 +150,7 @@ public final class DeepLClient implements TranslationService {
         try {
             return Json.parseObject(body);
         } catch (Json.JsonException exception) {
-            throw new DeepLException(200, "непонятный ответ DeepL: " + exception.getMessage());
+            throw new ServiceException(ServiceException.Kind.OTHER, 200, "непонятный ответ DeepL: " + exception.getMessage());
         }
     }
 
@@ -177,6 +165,6 @@ public final class DeepLClient implements TranslationService {
                 }
             }
         }
-        throw new DeepLException(200, "в ответе DeepL нет перевода");
+        throw new ServiceException(ServiceException.Kind.OTHER, 200, "в ответе DeepL нет перевода");
     }
 }

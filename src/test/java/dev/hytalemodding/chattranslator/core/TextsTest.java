@@ -21,6 +21,9 @@ class TextsTest {
         assertEquals(Texts.Choice.AUTO, Texts.Choice.parse("auto"));
         assertEquals(Texts.Choice.OFF, Texts.Choice.parse("выкл"));
         assertEquals(Texts.Choice.OFF, Texts.Choice.parse(" off "));
+        assertEquals(Texts.Choice.TEST, Texts.Choice.parse("test"));
+        assertEquals(Texts.Choice.TEST, Texts.Choice.parse("тест"));
+        assertEquals(Texts.Choice.EN, Texts.Choice.parse("eng"));
         assertNull(Texts.Choice.parse("de"));
         assertNull(Texts.Choice.parse(null));
     }
@@ -47,8 +50,11 @@ class TextsTest {
 
     @Test
     void messagesAreInTheReadersLanguage() {
-        assertTrue(Texts.joinHint(Lang.RU).contains("/lang en"));
-        assertTrue(Texts.joinHint(Lang.EN).contains("/lang ru"));
+        assertTrue(Texts.joinHint(Lang.RU).contains("/tr en"));
+        assertTrue(Texts.joinHint(Lang.EN).contains("/tr ru"));
+        assertTrue(Texts.info(Lang.RU, true).contains("/tr off"));
+        assertTrue(Texts.info(Lang.EN, false).contains("off for you"));
+        assertFalse(Texts.usage(Lang.RU).contains("/lang"), "встроенная /lang сервера — не наша команда");
         assertTrue(Texts.chosen(Lang.EN).startsWith("[Translator]"));
         assertTrue(Texts.chosen(Lang.RU).startsWith("[Переводчик]"));
     }

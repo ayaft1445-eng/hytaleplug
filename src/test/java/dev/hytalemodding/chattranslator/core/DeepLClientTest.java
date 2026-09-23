@@ -92,27 +92,45 @@ class DeepLClientTest {
         assertEquals("RU", request.get("target_lang"));
     }
 
+    private ServiceException failure() {
+        CompletionException error = assertThrows(CompletionException.class,
+                () -> client().translate("hello", Lang.EN, Lang.RU).join());
+        return assertInstanceOf(ServiceException.class, error.getCause());
+    }
+
     @Test
     void errorCodesBecomeReadableMessages() {
         this.status = 403;
-        CompletionException rejected = assertThrows(CompletionException.class,
-                () -> client().translate("hello", Lang.EN, Lang.RU).join());
-        DeepLClient.DeepLException error = assertInstanceOf(DeepLClient.DeepLException.class, rejected.getCause());
-        assertEquals(403, error.status());
-        assertTrue(error.getMessage().contains("ключ"), error.getMessage());
+        ServiceException rejected = failure();
+        assertEquals(ServiceException.Kind.KEY_REJECTED, rejected.kind());
+        assertEquals(403, rejected.status());
+        assertTrue(rejected.getMessage().contains("ключ"), rejected.getMessage());
 
         this.status = 456;
-        CompletionException quota = assertThrows(CompletionException.class,
-                () -> client().translate("hello", Lang.EN, Lang.RU).join());
-        assertTrue(quota.getCause().getMessage().contains("лимит"), quota.getCause().getMessage());
+        ServiceException quota = failure();
+        assertEquals(ServiceException.Kind.QUOTA, quota.kind());
+        assertTrue(quota.getMessage().contains("лимит"), quota.getMessage());
+
+        this.status = 503;
+        assertEquals(ServiceException.Kind.OTHER, failure().kind());
+    }
+
+    @Test
+    void regionBlockIsRecognised() {
+        // Такой ответ DeepL прислал живому серверу: сервис не работает в стране, где тот стоит.
+        this.status = 451;
+        ServiceException blocked = failure();
+        assertEquals(ServiceException.Kind.REGION_BLOCKED, blocked.kind());
+        assertTrue(blocked.getMessage().contains("451"), blocked.getMessage());
+
+        CompletionException usage = assertThrows(CompletionException.class, () -> client().usage().join());
+        assertEquals(ServiceException.Kind.REGION_BLOCKED, assertInstanceOf(ServiceException.class, usage.getCause()).kind());
     }
 
     @Test
     void brokenResponseIsAnError() {
         this.responseBody = "{\"message\":\"no translations here\"}";
-        CompletionException error = assertThrows(CompletionException.class,
-                () -> client().translate("hello", Lang.EN, Lang.RU).join());
-        assertInstanceOf(DeepLClient.DeepLException.class, error.getCause());
+        assertEquals(ServiceException.Kind.OTHER, failure().kind());
     }
 
     @Test
@@ -122,6 +140,11 @@ class DeepLClientTest {
         assertEquals(12345, usage.used());
         assertEquals(500000, usage.limit());
         assertEquals("DeepL-Auth-Key " + KEY, this.lastAuthorization.get());
+    }
+
+    @Test
+    void nameIsShownInConsole() {
+        assertEquals("DeepL", client().name());
     }
 
     @Test

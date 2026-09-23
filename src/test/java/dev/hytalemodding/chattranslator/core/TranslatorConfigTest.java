@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +70,43 @@ class TranslatorConfigTest {
         Json.JsonException error = assertThrows(Json.JsonException.class, () -> TranslatorConfig.loadOrCreate(file));
         assertTrue(error.getMessage().startsWith("строка 3") || error.getMessage().startsWith("строка 2"), error.getMessage());
         assertEquals(broken, Files.readString(file, StandardCharsets.UTF_8), "испорченный файл не перезаписан");
+    }
+
+    @Test
+    void translatorsDefaultToDeepLThenMyMemory() throws Exception {
+        TranslatorConfig config = TranslatorConfig.loadOrCreate(this.dir.resolve("config.json"));
+        assertEquals(List.of("deepl", "mymemory"), config.translators());
+        assertEquals("", config.myMemoryEmail());
+    }
+
+    @Test
+    void translatorsAreReadFromFile() throws Exception {
+        Path file = this.dir.resolve("config.json");
+        Files.writeString(file, "{\"Translators\": [\"MyMemory\", \"google\", \"mymemory\"], \"MyMemoryEmail\": \" me@example.com \"}",
+                StandardCharsets.UTF_8);
+
+        TranslatorConfig config = TranslatorConfig.loadOrCreate(file);
+
+        assertEquals(List.of("mymemory"), config.translators());
+        assertEquals("me@example.com", config.myMemoryEmail());
+        assertEquals(1, config.warnings().size(), config.warnings().toString());
+        assertTrue(config.warnings().get(0).contains("google"));
+    }
+
+    @Test
+    void oldConfigGetsNewFields() throws Exception {
+        Path file = this.dir.resolve("config.json");
+        // config.json версии 1.0.0 — без Translators и MyMemoryEmail.
+        Files.writeString(file, "{\"DeepLApiKey\": \"key:fx\", \"DefaultLanguage\": \"en\", \"MarkTranslations\": true,"
+                + " \"ShowOriginal\": false, \"LearnLanguageFromChat\": true, \"JoinHint\": true, \"MemoryMaxPhrases\": 20000}",
+                StandardCharsets.UTF_8);
+
+        TranslatorConfig.loadOrCreate(file);
+
+        Map<String, Object> rewritten = Json.parseObject(Files.readString(file, StandardCharsets.UTF_8));
+        assertEquals("key:fx", rewritten.get("DeepLApiKey"));
+        assertEquals(List.of("deepl", "mymemory"), rewritten.get("Translators"));
+        assertEquals("", rewritten.get("MyMemoryEmail"));
     }
 
     @Test

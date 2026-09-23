@@ -1,7 +1,9 @@
 package dev.hytalemodding.chattranslator.core;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -13,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Всё, что плагину нужно для перевода, без привязки к API сервера: настройки,
- * память переводов, языки игроков, DeepL и очередь доставки.
+ * память переводов, языки игроков, переводчики и очередь доставки.
  *
  * Файлы лежат в папке данных плагина:
  * {@code config.json} — настройки и ключ DeepL,
@@ -26,6 +28,7 @@ public final class TranslatorCore {
     private final Path configFile;
     private final Path memoryFile;
     private final Path playersFile;
+    private final HttpClient http;
 
     private final TranslationMemory memory;
     private final PlayerLanguages players;
@@ -33,11 +36,15 @@ public final class TranslatorCore {
     private final OrderedDelivery delivery;
 
     private volatile TranslatorConfig config;
-    private volatile DeepLClient client;
     private ScheduledExecutorService saver;
 
     public TranslatorCore(Path dataDirectory, Log log) {
+        this(dataDirectory, log, HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+    }
+
+    TranslatorCore(Path dataDirectory, Log log, HttpClient http) {
         this.log = log;
+        this.http = http;
         this.configFile = dataDirectory.resolve("config.json").toAbsolutePath();
         this.memoryFile = dataDirectory.resolve("memory.json").toAbsolutePath();
         this.playersFile = dataDirectory.resolve("players.json").toAbsolutePath();
@@ -46,7 +53,7 @@ public final class TranslatorCore {
         this.config = loaded != null ? loaded : TranslatorConfig.defaults();
         this.memory = new TranslationMemory(this.config.memoryMaxPhrases());
         this.players = new PlayerLanguages(this.config.defaultLanguage());
-        this.translator = new Translator(null, this.memory, log);
+        this.translator = new Translator(this.memory, log);
         this.delivery = new OrderedDelivery(log);
 
         loadMemory();
@@ -56,9 +63,9 @@ public final class TranslatorCore {
 
     // ---------------------------------------------------------------- доступ
 
-    /** Ключ DeepL вписан: чат переводится. */
+    /** Есть хотя бы один переводчик: чат переводится. */
     public boolean isActive() {
-        return this.config.hasApiKey();
+        return !this.translator.providers().isEmpty();
     }
 
     public TranslatorConfig config() {
@@ -87,7 +94,7 @@ public final class TranslatorCore {
 
     // ---------------------------------------------------------------- запуск и остановка
 
-    /** Запускает периодическое сохранение файлов и пишет в консоль, что с плагином. */
+    /** Запускает периодическое сохранение, пишет в консоль, что с плагином, и проверяет переводчики. */
     public void start() {
         this.saver = Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread thread = new Thread(runnable, "ChatTranslator-save");
@@ -98,12 +105,25 @@ public final class TranslatorCore {
         this.saver.scheduleWithFixedDelay(this::saveMemory, 5, 5, TimeUnit.MINUTES);
 
         if (isActive()) {
-            this.log.info("Готов: перевод чата ru <-> en через DeepL ("
-                    + (DeepLClient.isFreeKey(this.config.deeplApiKey()) ? "бесплатный тариф" : "платный тариф")
-                    + "). В памяти фраз: " + this.memory.size() + ", игроков в базе: " + this.players.size() + ".");
+            this.log.info("Готов: перевод чата ru <-> en, переводчики по порядку: " + chainDescription()
+                    + ". В памяти фраз: " + this.memory.size() + ", игроков в базе: " + this.players.size() + ".");
+            checkServices().thenAccept(lines -> lines.forEach(this.log::info));
         } else {
-            this.log.warn("Ключ DeepL не задан, поэтому чат пока не переводится. Откройте файл "
-                    + this.configFile + ", впишите ключ в поле DeepLApiKey и напишите в консоли сервера: translator reload");
+            this.log.warn("Не настроен ни один переводчик, поэтому чат не переводится. Проверьте поле Translators в "
+                    + this.configFile + " и напишите в консоли сервера: translator reload");
+        }
+    }
+
+    /** Выполняет задачу один раз через {@code delaySeconds} секунд в фоновом потоке плагина. */
+    public void later(Runnable task, long delaySeconds) {
+        if (this.saver != null) {
+            this.saver.schedule(() -> {
+                try {
+                    task.run();
+                } catch (RuntimeException | LinkageError exception) {
+                    this.log.warn("фоновая проверка не удалась: " + exception);
+                }
+            }, delaySeconds, TimeUnit.SECONDS);
         }
     }
 
@@ -120,10 +140,7 @@ public final class TranslatorCore {
         }
         savePlayers();
         saveMemory();
-        DeepLClient current = this.client;
-        if (current != null) {
-            current.shutdown();
-        }
+        this.http.shutdown();
     }
 
     // ---------------------------------------------------------------- настройки
@@ -145,23 +162,39 @@ public final class TranslatorCore {
         for (String warning : loaded.warnings()) {
             lines.add("Замечание: " + warning);
         }
-        lines.add(loaded.hasApiKey()
-                ? "Ключ DeepL задан, перевод включён. Проверить ключ: /translator status"
-                : "Ключ DeepL не задан — чат не переводится.");
+        lines.add(isActive()
+                ? "Переводчики по порядку: " + chainDescription() + ". Проверить их: /translator status"
+                : "Не настроен ни один переводчик — чат не переводится.");
+        if (loaded.translators().contains(TranslatorConfig.DEEPL) && !loaded.hasApiKey()) {
+            lines.add("DeepL пропущен: в DeepLApiKey нет ключа.");
+        }
+        if (isActive()) {
+            checkServices().thenAccept(results -> results.forEach(this.log::info));
+        }
         return lines;
     }
 
     private void apply(TranslatorConfig next) {
-        DeepLClient previous = this.client;
-        DeepLClient created = next.hasApiKey() ? new DeepLClient(next.deeplApiKey()) : null;
-        this.client = created;
-        this.translator.useService(created);
+        List<TranslationService> services = new ArrayList<>();
+        for (String name : next.translators()) {
+            if (name.equals(TranslatorConfig.DEEPL) && next.hasApiKey()) {
+                services.add(new DeepLClient(next.deeplApiKey(), this.http));
+            } else if (name.equals(TranslatorConfig.MYMEMORY)) {
+                services.add(new MyMemoryClient(next.myMemoryEmail(), this.http));
+            }
+        }
+        this.translator.useServices(services);
         this.memory.setMaxPhrases(next.memoryMaxPhrases());
         this.players.setDefaultLanguage(next.defaultLanguage());
         this.config = next;
-        if (previous != null) {
-            previous.shutdown();
+    }
+
+    private String chainDescription() {
+        List<String> names = new ArrayList<>();
+        for (Translator.Provider provider : this.translator.providers()) {
+            names.add(provider.name());
         }
+        return names.isEmpty() ? "нет" : String.join(" -> ", names);
     }
 
     /** Читает настройки; {@code null}, если файл испорчен или не читается (причина уже в консоли). */
@@ -179,6 +212,47 @@ public final class TranslatorCore {
             this.log.warn("Не удалось прочитать или создать " + this.configFile + ": " + exception);
         }
         return null;
+    }
+
+    // ---------------------------------------------------------------- проверка переводчиков
+
+    /**
+     * Проверяет каждый переводчик настоящим запросом: у DeepL спрашивается остаток
+     * символов (лимит не тратится), MyMemory переводит слово «hello».
+     * Переводчик, который отказал надолго, сразу ставится на паузу.
+     *
+     * @return по строке на переводчик
+     */
+    public CompletableFuture<List<String>> checkServices() {
+        List<Translator.Provider> chain = this.translator.providers();
+        List<CompletableFuture<String>> checks = new ArrayList<>();
+        for (Translator.Provider provider : chain) {
+            checks.add(check(provider.service()));
+        }
+        return CompletableFuture.allOf(checks.toArray(new CompletableFuture[0])).handle((ignored, error) -> {
+            List<String> lines = new ArrayList<>();
+            for (CompletableFuture<String> check : checks) {
+                lines.add(check.join());
+            }
+            return lines;
+        });
+    }
+
+    private CompletableFuture<String> check(TranslationService service) {
+        CompletableFuture<String> probe;
+        if (service instanceof DeepLClient) {
+            probe = ((DeepLClient) service).usage().thenApply(usage -> "работает, в этом месяце израсходовано "
+                    + number(usage.used()) + " из " + number(usage.limit()) + " символов");
+        } else {
+            probe = service.translate("hello", Lang.EN, Lang.RU).thenApply(result -> "работает (проверка: hello -> " + result + ")");
+        }
+        return probe.handle((result, error) -> {
+            if (error == null) {
+                return service.name() + ": " + result;
+            }
+            this.translator.reportFailure(service.name(), error);
+            return service.name() + ": не работает — " + Translator.describe(Translator.unwrap(error));
+        });
     }
 
     // ---------------------------------------------------------------- файлы данных
@@ -236,43 +310,42 @@ public final class TranslatorCore {
 
     // ---------------------------------------------------------------- состояние
 
-    /** Строки для {@code /translator status}; остаток символов DeepL спрашивается у сервиса. */
+    /** Строки для {@code /translator status}; каждый переводчик проверяется настоящим запросом. */
     public CompletableFuture<List<String>> status() {
         TranslatorConfig current = this.config;
-        DeepLClient currentClient = this.client;
-        List<String> lines = new ArrayList<>();
-        lines.add("ChatTranslator: перевод чата ru <-> en");
-        if (!current.hasApiKey()) {
-            lines.add("Ключ DeepL: НЕ задан. Впишите его в " + this.configFile + " (поле DeepLApiKey) и напишите /translator reload");
-        } else {
-            lines.add("Ключ DeepL: задан, " + (DeepLClient.isFreeKey(current.deeplApiKey())
-                    ? "бесплатный тариф (api-free.deepl.com)" : "платный тариф (api.deepl.com)"));
-        }
-        String pause = this.translator.pauseReason();
-        if (pause != null) {
-            lines.add("Сейчас перевод приостановлен: " + pause);
-        }
-        lines.add("С запуска сервера: из памяти " + number(this.translator.fromMemory())
-                + ", через DeepL " + number(this.translator.fromService())
-                + " (" + number(this.translator.serviceCharacters()) + " симв.), ошибок " + number(this.translator.failures()));
-        lines.add("Память переводов: " + number(this.memory.size()) + " фраз из " + number(current.memoryMaxPhrases()));
-        Map<Lang, Integer> byLanguage = this.players.countByLanguage();
-        lines.add("Игроков в базе: " + number(this.players.size())
-                + " — читают по-русски " + number(byLanguage.getOrDefault(Lang.RU, 0))
-                + ", по-английски " + number(byLanguage.getOrDefault(Lang.EN, 0))
-                + ", без перевода " + number(this.players.translationOff()));
-
-        if (currentClient == null) {
-            return CompletableFuture.completedFuture(lines);
-        }
-        return currentClient.usage().handle((usage, error) -> {
-            if (error == null) {
-                lines.add(2, "DeepL: ключ работает, в этом месяце израсходовано "
-                        + number(usage.used()) + " из " + number(usage.limit()) + " символов");
+        return checkServices().thenApply(checks -> {
+            List<String> lines = new ArrayList<>();
+            lines.add("ChatTranslator: перевод чата ru <-> en");
+            if (isActive()) {
+                lines.add("Переводчики по порядку: " + chainDescription());
             } else {
-                lines.add(2, "DeepL: проверка ключа не удалась — "
-                        + Translator.describe(Translator.unwrap(error)));
+                lines.add("Не настроен ни один переводчик (поле Translators в " + this.configFile + ")");
             }
+            if (current.translators().contains(TranslatorConfig.DEEPL) && !current.hasApiKey()) {
+                lines.add("DeepL: пропущен, в DeepLApiKey нет ключа");
+            }
+            lines.addAll(checks);
+
+            Translator.Provider active = this.translator.activeProvider();
+            if (isActive()) {
+                lines.add(active != null
+                        ? "Сейчас переводит: " + active.name()
+                        : "Сейчас все переводчики на паузе — сообщения идут без перевода");
+            }
+            StringBuilder counters = new StringBuilder("С запуска сервера: из памяти ")
+                    .append(number(this.translator.fromMemory()));
+            for (Translator.Provider provider : this.translator.providers()) {
+                counters.append(", ").append(provider.name()).append(' ').append(number(provider.requests()))
+                        .append(" (").append(number(provider.characters())).append(" симв.)");
+            }
+            counters.append(", без перевода ").append(number(this.translator.untranslated()));
+            lines.add(counters.toString());
+            lines.add("Память переводов: " + number(this.memory.size()) + " фраз из " + number(current.memoryMaxPhrases()));
+            Map<Lang, Integer> byLanguage = this.players.countByLanguage();
+            lines.add("Игроков в базе: " + number(this.players.size())
+                    + " — читают по-русски " + number(byLanguage.getOrDefault(Lang.RU, 0))
+                    + ", по-английски " + number(byLanguage.getOrDefault(Lang.EN, 0))
+                    + ", без перевода " + number(this.players.translationOff()));
             return lines;
         });
     }

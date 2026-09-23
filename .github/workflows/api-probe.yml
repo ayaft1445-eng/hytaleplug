@@ -23,31 +23,13 @@ jobs:
       uses: gradle/actions/setup-gradle@v5
 
     - name: Resolve server jar
-      run: ./gradlew compileJava
+      run: ./gradlew compileJava || true
 
     - name: Probe command system
       run: |
         set +e
         JAR=$(find "$HOME" -name "Server-*.jar" 2>/dev/null | head -1)
         echo "JAR: $JAR"
-        curl -sSL -o /tmp/cfr.jar https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
-
-        echo "===== decompile"
-        java -jar /tmp/cfr.jar "$JAR" --outputdir /tmp/src \
-          --jarfilter '^com\.hypixel\.hytale\.server\.core\.(command\.system\.CommandManager|modules\.i18n\.commands\..*)$' > /dev/null 2>&1
-        find /tmp/src -name "*.java" | sort
-
-        echo "===== i18n commands: names, aliases, subcommands"
-        for f in $(find /tmp/src/com/hypixel/hytale/server/core/modules/i18n -name "*.java"); do
-          echo "--- $f"
-          grep -n -E "class |super\(|addAliases|addSubCommand|addUsageVariant|withRequiredArg|withOptionalArg|requirePermission|setPermissionGroup" "$f" | head -40
-        done
-
-        echo "===== CommandManager: how a typed command is looked up"
-        M=/tmp/src/com/hypixel/hytale/server/core/command/system/CommandManager.java
-        grep -n -B2 -A12 -E "aliases\.get|commandRegistration\.get\(" "$M" | head -120
-
-        echo "===== who registers i18n commands"
-        grep -rn "InternationalizationCommands" /tmp/src | head
-        javap -cp "$JAR" -p com.hypixel.hytale.server.core.modules.i18n.I18nModule | grep -i -E "command|setup" | head
+        echo "===== CommandManager public API"
+        javap -cp "$JAR" com.hypixel.hytale.server.core.command.system.CommandManager | grep -E "static|resolveCommand|public .*get" | head -20
         exit 0
