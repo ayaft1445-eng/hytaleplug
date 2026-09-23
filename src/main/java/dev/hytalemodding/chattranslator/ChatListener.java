@@ -100,7 +100,7 @@ final class ChatListener {
         if (note == null) {
             return message;
         }
-        return message.insert(Message.raw(" " + note).color(NOTE_COLOR));
+        return Message.join(message, Message.raw(" " + note).color(NOTE_COLOR));
     }
 
     private static void send(List<PlayerRef> recipients, Message message) {

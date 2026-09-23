@@ -27,31 +27,6 @@ jobs:
     - name: Build plugin
       run: ./gradlew build
 
-    # Временный шаг: сверка API сервера, которым пользуется плагин.
-    - name: Dump server API used by the plugin
-      if: always()
-      run: |
-        set +e
-        JAR=$(find "$HOME" -name "Server-*.jar" 2>/dev/null | head -1)
-        echo "JAR: $JAR"
-        for FQN in \
-          com.hypixel.hytale.event.IEventRegistry \
-          com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent \
-          'com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent$Formatter' \
-          com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent \
-          com.hypixel.hytale.server.core.universe.PlayerRef \
-          com.hypixel.hytale.server.core.Message \
-          com.hypixel.hytale.server.core.command.system.AbstractCommand \
-          com.hypixel.hytale.server.core.command.system.CommandContext \
-          com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg \
-          com.hypixel.hytale.server.core.plugin.PluginBase ; do
-          echo "=========== $FQN"
-          javap -cp "$JAR" "$FQN" 2>&1 | grep -v -E "^\s*(private|static \{\})" | head -120
-        done
-        echo "=========== ArgTypes.STRING"
-        javap -cp "$JAR" com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes 2>&1 | grep -E " STRING;| GREEDY| class "
-        exit 0
-
     - name: Show jar contents
       run: unzip -l build/libs/*.jar
 

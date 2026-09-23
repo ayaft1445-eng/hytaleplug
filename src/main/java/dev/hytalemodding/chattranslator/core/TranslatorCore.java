@@ -110,7 +110,13 @@ public final class TranslatorCore {
     /** Сохраняет всё и останавливает фоновые задачи. */
     public void stop() {
         if (this.saver != null) {
-            this.saver.shutdownNow();
+            // Без прерывания: начатое сохранение должно дописать файл до конца.
+            this.saver.shutdown();
+            try {
+                this.saver.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
         }
         savePlayers();
         saveMemory();

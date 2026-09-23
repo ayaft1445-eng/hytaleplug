@@ -31,11 +31,8 @@ public class LangCommand extends AbstractPlayerCommand {
         super("lang", "Язык перевода чата / chat translation language: ru, en, auto, off");
         this.core = core;
         this.languageArg = this.withRequiredArg("language", "ru | en | auto | off", ArgTypes.STRING);
-    }
-
-    @Override
-    protected boolean canGeneratePermission() {
-        return false;
+        // Без этого сервер выдал бы команде отдельное право, и обычные игроки не смогли бы её вызвать.
+        this.requireNoPermission();
     }
 
     @Override
